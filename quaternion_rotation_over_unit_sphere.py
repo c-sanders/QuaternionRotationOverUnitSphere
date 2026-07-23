@@ -32,32 +32,40 @@ class vectorManipulator :
 
     def __init__(self) :
 
-        self.angle_rotation              = None
-        self.quaternion_axis_rotation    = None
-        self.quaternion_vector_to_rotate = None
+        # Rotation parameters.
+        # --------------------
+
+        self.angle_rotation_start     = 0
+        self.angle_rotation_increment = 5
+        self.angle_rotation           = self.angle_rotation_start
+
+        #
+
+        self.quaternion_axis_rotation = None
+        self.quaternion_to_rotate     = None
+
+        # Component arrays to hold the history of the rotated vector.
 
         self.x_components = np.array([])
         self.y_components = np.array([])
         self.z_components = np.array([])
 
+        # View parameters.
+        # ----------------
 
-    # Set the angle of rotation.
-    #
-    # The argument must be specified in radians, not degrees.
+        # Azimuth
 
-    def set_angle_rotation(self, angle_rotation) :
+        self.azimuth_view_start       = 0
+        self.azimuth_view_increment   = 2.5
 
-        self.angle_rotation = angle_rotation
+        self.azimuth_view             = self.azimuth_view_start
 
+        # Elevation
 
-    def set_axis_rotation(self, quaternion_axis_rotation) :
+        self.elevation_view_start     = 28
+        self.elevation_view_increment = 0
 
-        self.quaternion_axis_rotation = quaternion_axis_rotation
-
-
-    def set_vector_to_rotate(self, quaternion_vector_to_rotate) :
-
-        self.quaternion_vector_to_rotate = quaternion_vector_to_rotate
+        self.elevation_view           = self.elevation_view_start
 
 
     def generate_string(self, scalar_value, i_value, j_value, k_value) :
@@ -109,17 +117,20 @@ class vectorManipulator :
 
     def preMultiplyVectorUsingQuaternion(self) :
 
+        nameMethod     = "preMultiplyVectorUsingQuaternion"
+
         operation_type = "partial_multiplication"
+
 
         result = subprocess.run(
             [
              utility_quaternion_rotation,
              verbose_operation,
              operation_type,
-             str(self.quaternion_vector_to_rotate.x),
-             str(self.quaternion_vector_to_rotate.y),
-             str(self.quaternion_vector_to_rotate.z),
-             str(self.angle_rotation),
+             str(self.quaternion_to_rotate.x),
+             str(self.quaternion_to_rotate.y),
+             str(self.quaternion_to_rotate.z),
+             str(math.radians(self.angle_rotation)),
              str(self.quaternion_axis_rotation.x),
              str(self.quaternion_axis_rotation.y),
              str(self.quaternion_axis_rotation.z)
@@ -134,14 +145,14 @@ class vectorManipulator :
 
         # Convert the list of strings into a numpy vector.
 
-        v = np.array([float(x) for x in string_quaternion])
+        # v = np.array([float(x) for x in string_quaternion])
 
         quaternion_result = np.quaternion(0, 0, 0, 0)
 
-        quaternion_result.w = v[0]
-        quaternion_result.x = v[1]
-        quaternion_result.y = v[2]
-        quaternion_result.z = v[3]
+        quaternion_result.w = float(string_quaternion[0])
+        quaternion_result.x = float(string_quaternion[1])
+        quaternion_result.y = float(string_quaternion[2])
+        quaternion_result.z = float(string_quaternion[3])
 
         # print(result.stdout)
         # print(result.stderr)
@@ -159,10 +170,10 @@ class vectorManipulator :
              utility_quaternion_rotation,
              verbose_operation,
              operation_type,
-             str(self.quaternion_vector_to_rotate.x),
-             str(self.quaternion_vector_to_rotate.y),
-             str(self.quaternion_vector_to_rotate.z),
-             str(self.angle_rotation),
+             str(self.quaternion_to_rotate.x),
+             str(self.quaternion_to_rotate.y),
+             str(self.quaternion_to_rotate.z),
+             str(math.radians(self.angle_rotation)),
              str(self.quaternion_axis_rotation.x),
              str(self.quaternion_axis_rotation.y),
              str(self.quaternion_axis_rotation.z)
@@ -195,33 +206,54 @@ class vectorManipulator :
         return quaternion_result
 
 
-    def plotResult(
+    def plot_result(
 
             self,
             angle_rotation,
-            vector_a,
-            vector_b,
-            quaternion,
-            vector_d,
-            filename,
-            azimuth_view,
-            elevation_view
-    ) :
+            quaternion_axis_rotation,
+            quaternion_to_rotate,
+            quaternion_pre_multiply,
+            quaternion_rotated,
+            filename
+        ) :
+
+        """
+        Plot the current data.
+
+        Parameters
+        ----------
+
+        angle_rotation : Float
+
+            The angle of rotation around the axis of rotation.
+
+        quaternion_axis_rotation : numpy.quaternion
+
+            Quaternion representing the axis of rotation.
+        """
+
+        nameMethod = "plot_result"
+
+
+        print(nameMethod + " : Enter")
 
         # ----------------------------
         # Input vector
         # ----------------------------
+
         v = np.array([1.2, 0.8, 0.5])
 
         # ----------------------------
         # Create figure
         # ----------------------------
+
         fig = plt.figure(figsize=(8, 8))
         ax = fig.add_subplot(111, projection='3d')
 
         # ----------------------------
         # Plot the unit sphere.
         # ----------------------------
+
         u = np.linspace(0, 2 * np.pi, 100)
         v_sphere = np.linspace(0, np.pi, 100)
 
@@ -264,43 +296,53 @@ class vectorManipulator :
         # Plot vectors
         # ----------------------------
 
+        print(nameMethod + " : MARKER 1")
+
         ax.quiver(
             0, 0, 0,
-            vector_a[0], vector_a[1], vector_a[2],
+            quaternion_axis_rotation.x, quaternion_axis_rotation.y, quaternion_axis_rotation.z,
             color='red',
             linewidth=1,
             arrow_length_ratio=0.1
         )
 
+        print(nameMethod + " : MARKER 2")
+
         ax.quiver(
             0, 0, 0,
-            vector_b[0], vector_b[1], vector_b[2],
+            quaternion_to_rotate.x, quaternion_to_rotate.y, quaternion_to_rotate.z,
             color='green',
             linewidth=1,
             arrow_length_ratio=0.1
         )
 
+        print(nameMethod + " : MARKER 3")
+
         ax.quiver(
             0, 0, 0,
-            quaternion[1], quaternion[2], quaternion[3],
+            quaternion_pre_multiply.x, quaternion_pre_multiply.y, quaternion_pre_multiply.z,
             color='blue',
             linewidth=1,
             arrow_length_ratio=0.1
         )
 
+        print(nameMethod + " : MARKER 4")
+
         ax.quiver(
             0, 0, 0,
-            vector_d[0], vector_d[1], vector_d[2],
+            quaternion_rotated.x, quaternion_rotated.y, quaternion_rotated.z,
             color='magenta',
             linewidth=1,
             arrow_length_ratio=0.1
         )
 
+        print(nameMethod + " : MARKER 5")
+
         # Add the point to the list of points.
 
-        self.x_components = np.append(self.x_components, vector_d[0])
-        self.y_components = np.append(self.y_components, vector_d[1])
-        self.z_components = np.append(self.z_components, vector_d[2])
+        self.x_components = np.append(self.x_components, quaternion_rotated.x)
+        self.y_components = np.append(self.y_components, quaternion_rotated.y)
+        self.z_components = np.append(self.z_components, quaternion_rotated.z)
 
         print(f"Length self.x_components = {len(self.x_components):d}")
         print(f"Length self.y_components = {len(self.y_components):d}")
@@ -308,26 +350,33 @@ class vectorManipulator :
 
         ax.plot(self.x_components, self.y_components, self.z_components, marker=None, linestyle='-', color='magenta')
 
+        print(nameMethod + " : MARKER 6")
+
         # Label vector tip
 
         # label_vector_a_tip = "<" + str(vector_a[0])   + ", " + str(vector_a[1])   + ", " + str(vector_a[2]) + ">"
-        # label_vector_b_tip = "<" + str(vector_b[0])   + ", " + str(vector_b[1])   + ", " + str(vector_b[2]) + ">"
+        # label_quaternion_to_rotate_tip = "<" + str(quaternion_to_rotate[0])   + ", " + str(quaternion_to_rotate[1])   + ", " + str(quaternion_to_rotate[2]) + ">"
         # label_vector_c_tip = "<" + str(quaternion[1]) + ", " + str(quaternion[1]) + ", " + str(quaternion[2]) + ", " + str(quaternion[2]) + ">"
         # label_vector_d_tip = "<" + str(vector_d[0])   + ", " + str(vector_d[1])   + ", " + str(vector_d[2]) + ">"
 
         # label_vector_a_tip = f"Axis       : 0.000 + i{vector_a[0]:.3f} + j{vector_a[1]:.3f} + k{vector_a[2]:.3f}"
-        # label_vector_b_tip = f"Vector     : 0.000 + i{vector_b[0]:.3f} + j{vector_b[1]:.3f} + k{vector_b[2]:.3f}"
+        # label_quaternion_to_rotate_tip = f"Vector     : 0.000 + i{quaternion_to_rotate[0]:.3f} + j{quaternion_to_rotate[1]:.3f} + k{quaternion_to_rotate[2]:.3f}"
         # label_vector_c_tip = f"Partial    : {quaternion[0]:.3f} + i{quaternion[1]:.3f} + j{quaternion[2]:.3f} + k{quaternion[3]:.3f}"
 
-        label_vector_a = self.generate_string(0.000,         vector_a[0],   vector_a[1],   vector_a[2])
-        label_vector_b = self.generate_string(0.000,         vector_b[0],   vector_b[1],   vector_b[2])
-        label_vector_c = self.generate_string(quaternion[0], quaternion[1], quaternion[2], quaternion[3])
-        label_vector_d = self.generate_string(0.000,         vector_d[0],   vector_d[1],   vector_d[2])
+        label_quaternion_axis_rotation = self.generate_string(quaternion_axis_rotation.w, quaternion_axis_rotation.x, quaternion_axis_rotation.y, quaternion_axis_rotation.z)
+        print(nameMethod + " : MARKER 6A")
+        label_quaternion_to_rotate     = self.generate_string(quaternion_to_rotate.w,     quaternion_to_rotate.x,     quaternion_to_rotate.y,     quaternion_to_rotate.z)
+        print(nameMethod + " : MARKER 6B")
+        label_quaternion_pre_multiply       = self.generate_string(quaternion_pre_multiply.w,       quaternion_pre_multiply.x,       quaternion_pre_multiply.y,       quaternion_pre_multiply.z)
+        print(nameMethod + " : MARKER 6C")
+        label_quaternion_rotated       = self.generate_string(quaternion_rotated.w,       quaternion_rotated.x,       quaternion_rotated.y,       quaternion_rotated.z)
 
-        label_vector_a = f"Axis         : " + label_vector_a
-        label_vector_b = f"Vector       : " + label_vector_b
-        label_vector_c = f"Partial (qv) : " + label_vector_c
-        label_vector_d = f"Vector rot   : " + label_vector_d
+        print(nameMethod + " : MARKER 7")
+
+        label_quaternion_axis_rotation = f"Axis         : " + label_quaternion_axis_rotation
+        label_quaternion_to_rotate     = f"Vector       : " + label_quaternion_to_rotate
+        label_quaternion_pre_multiply       = f"Partial (qv) : " + label_quaternion_pre_multiply
+        label_quaternion_rotated       = f"Vector rot   : " + label_quaternion_rotated
 
         label_angle_rotation = f"Angle of rotation = {angle_rotation:8.3f} degrees"
 
@@ -338,8 +387,8 @@ class vectorManipulator :
         # )
 
         # ax.text(
-        #     vector_b[0], vector_b[1], vector_b[2],
-        #     label_vector_b_tip,
+        #     quaternion_to_rotate[0], quaternion_to_rotate[1], quaternion_to_rotate[2],
+        #     label_quaternion_to_rotate_tip,
         #     color="green"
         # )
 
@@ -350,8 +399,8 @@ class vectorManipulator :
         # )
 
         # ax.text(
-        #     vector_d[0], vector_d[1], vector_d[2],
-        #     label_vector_d_tip,
+        #     quaternion_rotated[0], quaternion_rotated[1], quaternion_rotated[2],
+        #     label_quaternion_rotated_tip,
         #     color="magenta"
         # )
 
@@ -373,18 +422,23 @@ class vectorManipulator :
         # ----------------------------
         # Labels
         # ----------------------------
+
         ax.set_xlabel('x')
         ax.set_ylabel('y')
         ax.set_zlabel('z')
         ax.set_title('3d vectors and the unit sphere')
 
+        print(nameMethod + " : MARKER 8")
+
         legend_elements = [
-            Line2D([0], [0], color='red',     lw=1, label=label_vector_a),
-            Line2D([0], [0], color='green',   lw=1, label=label_vector_b),
-            Line2D([0], [0], color='blue',    lw=1, label=label_vector_c),
-            Line2D([0], [0], color='magenta', lw=1, label=label_vector_d),
+            Line2D([0], [0], color='red',     lw=1, label=label_quaternion_axis_rotation),
+            Line2D([0], [0], color='green',   lw=1, label=label_quaternion_to_rotate),
+            Line2D([0], [0], color='blue',    lw=1, label=label_quaternion_pre_multiply),
+            Line2D([0], [0], color='magenta', lw=1, label=label_quaternion_rotated),
             Line2D([0], [0], color='white',   lw=1, label=label_angle_rotation)
         ]
+
+        print(nameMethod + " : MARKER 9")
 
         legend = ax.legend(
                            handles=legend_elements,
@@ -398,7 +452,7 @@ class vectorManipulator :
 
         # If the scalar part of the quaternion is not close in value to 0, then display its text in red
 
-        if abs(quaternion[0]) > 0.001 :
+        if abs(quaternion_pre_multiply.x) > 0.001 :
 
             legend.get_texts()[2].set_color("red")
 
@@ -412,7 +466,7 @@ class vectorManipulator :
         ax.yaxis.pane.fill = False
         ax.zaxis.pane.fill = False
 
-        ax.view_init(elev=elevation_view, azim=azimuth_view)
+        ax.view_init(elev=self.elevation_view, azim=self.azimuth_view)
 
         matplotlib.use("QtAgg")
 
@@ -420,38 +474,39 @@ class vectorManipulator :
 
         fig.savefig(filename, dpi=300, bbox_inches="tight")
 
+        print(nameMethod + " : MARKER 10")
 
         metadata = {
             "view": {
-                "azimuth"   : azimuth_view,
-                "elevation" : elevation_view
+                "azimuth"   : self.azimuth_view,
+                "elevation" : self.elevation_view
             },
             "rotation": {
                 "angle": angle_rotation,
                 "axis": {
-                    "scalar": 0.0,
-                    "x": vector_a[0],
-                    "y": vector_a[1],
-                    "z": vector_a[2]
+                    "scalar": quaternion_axis_rotation.w,
+                    "x":      quaternion_axis_rotation.x,
+                    "y":      quaternion_axis_rotation.y,
+                    "z":      quaternion_axis_rotation.z
                 },
             },
-            "vector_to_rotate": {
-                "scalar": 0.0,
-                "x": vector_b[0],
-                "y": vector_b[1],
-                "z": vector_b[2]
+            "quaternion_to_rotate": {
+                "scalar": quaternion_to_rotate.w,
+                "x":      quaternion_to_rotate.x,
+                "y":      quaternion_to_rotate.y,
+                "z":      quaternion_to_rotate.z
             },
             "quaternion_pre_multiply": {
-                "scalar": quaternion[0],
-                "x": quaternion[1],
-                "y": quaternion[2],
-                "z": quaternion[3]
+                "scalar": quaternion_pre_multiply.w,
+                "x":      quaternion_pre_multiply.x,
+                "y":      quaternion_pre_multiply.y,
+                "z":      quaternion_pre_multiply.z
             },
-            "vector_rotated": {
-                "scalar": 0.0,
-                "x": vector_d[0],
-                "y": vector_d[1],
-                "z": vector_d[2]
+            "quaternion_rotated": {
+                "scalar": quaternion_rotated.w,
+                "x": quaternion_rotated.x,
+                "y": quaternion_rotated.y,
+                "z": quaternion_rotated.z
             },
         }
 
@@ -496,6 +551,97 @@ class vectorManipulator :
         # Close the figure so that we can free up the memory it is using.
 
         plt.close(fig)
+
+        print(nameMethod + " : Exit")
+
+
+    def set_plot_loop_parameters(self) :
+
+        # number_increments = 1
+
+        # self.azimuth_plot_start = 0
+        # self.azimuth_plot_increment = 5
+
+        self.azimuth_view_start = 0
+        self.azimuth_view_increment = 2.5
+
+        elevation_view = 28
+
+        # self.azimuth_plot = self.azimuth_plot_start
+        self.azimuth_view = self.azimuth_view_start
+
+
+    def generate_plots(
+
+            self,
+            quaternion_axis_rotation,
+            quaternion_to_rotate
+        ) :
+
+        nameMethod = "generate_plots"
+
+
+        print(nameMethod + " : Enter")
+
+        # self.set_plot_loop_parameters()
+
+        self.quaternion_axis_rotation = quaternion_axis_rotation
+        self.quaternion_to_rotate     = quaternion_to_rotate
+
+        counter = 0
+
+        while self.angle_rotation <= 720:
+
+            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+            print(nameMethod + f" : counter = {counter:d}")
+            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+
+            print(f"Azimuth view = {self.azimuth_view:f}")
+
+            # Set the parameters for the quaternionic computations.
+
+            print("MARKER")
+
+            quaternion_pre_multiply = self.preMultiplyVectorUsingQuaternion()
+
+            print("quaternion_pre_multiply = ", quaternion_pre_multiply)
+
+            # Call the Haskell quaternion rotation utility and get the result.
+
+            quaternion_rotated = self.rotateVectorUsingQuaternion()
+
+            vector_rotated = (quaternion.as_float_array(quaternion_rotated))[1:4]
+
+            print("quaternion = ", quaternion)
+
+            # Plot the results using matplotlib.
+
+            filename = f"rotation-{counter:04d}.png"
+
+            self.plot_result(
+
+                self.angle_rotation,
+                quaternion_axis_rotation,
+                quaternion_to_rotate,
+                quaternion_pre_multiply,
+                quaternion_rotated,
+                filename
+            )
+
+            # Update the loop parameters.
+
+            counter = counter + 1
+
+            # self.azimuth_plot = (counter * self.azimuth_plot_increment) + self.azimuth_plot_start
+
+            self.angle_rotation = (counter * self.angle_rotation_increment) + self.angle_rotation_start
+
+            self.azimuth_view = (counter * self.azimuth_view_increment) + self.azimuth_view_start
+
+            print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+            print()
+
+        print(nameMethod + " : Exit")
 
 
 def displayUsage() :
@@ -573,79 +719,22 @@ def main() :
         vector_y          = float(sys.argv[8])
         vector_z          = float(sys.argv[9])
 
+        # Set up the appropriate values for the rotation.
+
         axis_rotation    = np.array([axis_x,axis_y,axis_z])
         angle_rotation   = angle_rotation
         vector_to_rotate = np.array([vector_x,vector_y,vector_z])
 
         quaternion_axis_rotation    = np.quaternion(0, axis_x, axis_y, axis_z)
-        quaternion_vector_to_rotate = np.quaternion(0, vector_x, vector_y, vector_z)
+        quaternion_to_rotate = np.quaternion(0, vector_x, vector_y, vector_z)
 
-        counter           = 0
-        # number_increments = 1
+        # Generate the plots.
 
-        azimuth_plot_start = 0
-        azimuth_view_start = 0
+        vector_manipulator.generate_plots(
 
-        azimuth_plot = azimuth_plot_start
+            quaternion_axis_rotation,
+            quaternion_to_rotate)
 
-        azimuth_plot_increment = 5
-        azimuth_view_increment = 2.5
-
-        elevation_view = 28
-
-        vector_manipulator.set_axis_rotation(quaternion_axis_rotation)
-        vector_manipulator.set_vector_to_rotate(quaternion_vector_to_rotate)
-
-        while azimuth_plot <= 720 :
-
-            azimuth_plot = (counter * azimuth_plot_increment) + azimuth_plot_start
-            azimuth_view = (counter * azimuth_view_increment) + azimuth_view_start
-
-            print(f"Counter = {counter:d}")
-            print(f"Azimuth plot = {azimuth_plot:f}")
-            print(f"Azimuth view = {azimuth_view:f}")
-
-            # Set the parameters for the quaternionic computations.
-
-            vector_manipulator.set_angle_rotation(math.radians(azimuth_plot))
-
-            # fonts = sorted(set(f.name for f in font_manager.fontManager.ttflist))
-            # for font in fonts:
-            #     print(font)
-
-            quaternion_partial = vector_manipulator.preMultiplyVectorUsingQuaternion()
-
-            print("quaternion_partial = ", quaternion_partial)
-
-            vector_partial = (quaternion.as_float_array(quaternion_partial))[1:4]
-
-            # vector_partial = np.array([0,0,0])
-            # vector_partial[0] = quaternion_partial.x
-            # vector_partial[1] = quaternion_partial.y
-            # vector_partial[2] = quaternion_partial.z
-
-            # Call the Haskell quaternion rotation utility and get the result.
-
-            quaternion_rotated = vector_manipulator.rotateVectorUsingQuaternion()
-
-            vector_rotated = (quaternion.as_float_array(quaternion_rotated))[1:4]
-
-            print("quaternion = ", quaternion)
-
-            filename = f"rotation-{counter:04d}.png"
-
-            vector_manipulator.plotResult(
-                                          float(azimuth_plot),
-                                          axis_rotation,
-                                          vector_to_rotate,
-                                          quaternion.as_float_array(quaternion_partial),
-                                          vector_rotated,
-                                          filename,
-                                          azimuth_view,
-                                          elevation_view
-                                         )
-
-            counter = counter + 1
 
     except Exception as e :
 
