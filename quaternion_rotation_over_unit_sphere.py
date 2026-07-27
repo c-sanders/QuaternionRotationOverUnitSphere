@@ -1,4 +1,5 @@
 import sys
+import colorsys
 import math
 from   matplotlib        import font_manager
 import subprocess
@@ -28,6 +29,11 @@ verbose_operation           = "False"
 
 show_plots = False
 
+plot_quaternion_pre_multiply_history = True
+plot_quaternion_rotated_history      = False
+
+rgb_value = colorsys.hsv_to_rgb(1.0, 1.0, 1.0)
+
 
 class PlotAgent :
 
@@ -51,11 +57,15 @@ class PlotAgent :
         self.quaternion_pre_multiply  = None
         self.quaternion_rotated       = None
 
+        self.quaternion_pre_multiply_min = 0.0
+        self.quaternion_pre_multiply_max = 0.0
+
         self.plot_handle_axis_rotation                   = None
         self.plot_handle_to_rotate                       = None
         self.plot_handle_quaternion_pre_multiply         = None
-        self.plot_handle_quaternion_rotated              = None
         self.plot_handle_quaternion_pre_multiply_history = None
+        self.plot_handle_quaternion_rotated              = None
+        self.plot_handle_quaternion_rotated_history      = None
 
         # Component arrays to hold the history of the rotated vector.
 
@@ -285,15 +295,45 @@ class PlotAgent :
         print(f"Length self.y_components = {len(self.y_components):d}")
         print(f"Length self.z_components = {len(self.z_components):d}")
 
-        self.plot_handle_quaternion_pre_multiply_history = self.ax.plot(
+        print(nameMethod + " : self.x_components = ")
+        print(self.x_components)
+        print(nameMethod + " : self.y_components = ")
+        print(self.y_components)
+        print(nameMethod + " : self.z_components = ")
+        print(self.z_components)
 
-            self.x_components,
-            self.y_components,
-            self.z_components,
-            marker=None,
-            linestyle='-',
-            color='magenta'
+        if plot_quaternion_rotated_history :
+
+            self.ax.plot(
+
+                self.quaternion_rotated.x,
+                self.quaternion_rotated.y,
+                self.quaternion_rotated.z,
+                marker='.',
+                linestyle='-',
+                color='magenta'
+            )
+
+        hue_value = ((self.quaternion_pre_multiply.x) * 0.5) + 0.5
+
+        rgb_value = colorsys.hsv_to_rgb(
+
+            hue_value,  # hue (0–1)
+            1.0,  # saturation
+            1.0  # value
         )
+
+        if plot_quaternion_pre_multiply_history :
+
+            self.ax.plot(
+
+                self.quaternion_pre_multiply.x,
+                self.quaternion_pre_multiply.y,
+                self.quaternion_pre_multiply.z,
+                marker='.',
+                linestyle='-',
+                color=rgb_value
+            )
 
 
     def add_labels_to_plot(self) :
@@ -325,11 +365,21 @@ class PlotAgent :
         label_quaternion_rotated       = self.generate_string(self.quaternion_rotated.w, self.quaternion_rotated.x,
                                                               self.quaternion_rotated.y, self.quaternion_rotated.z)
 
-        self.label_quaternion_axis_rotation = f"Axis of rotation (q)     : " + label_quaternion_axis_rotation
-        self.label_quaternion_to_rotate     = f"Quaternion to rotate (v) : " + label_quaternion_to_rotate
-        self.label_quaternion_pre_multiply  = f"Pre multiplication (qv)  : " + label_quaternion_pre_multiply
-        self.label_quaternion_rotated       = f"Quaternion rotated (v')  : " + label_quaternion_rotated
-        self.label_angle_rotation           = f"Angle of rotation        = {self.angle_rotation:8.3f} degrees"
+        if (self.quaternion_pre_multiply.w > self.quaternion_pre_multiply_max) :
+
+            self.quaternion_pre_multiply_max = self.quaternion_pre_multiply.w
+
+        if (self.quaternion_pre_multiply.w < self.quaternion_pre_multiply_min) :
+
+            self.quaternion_pre_multiply_min = self.quaternion_pre_multiply.w
+
+        self.label_quaternion_axis_rotation    = f"Axis of rotation (q)     : " + label_quaternion_axis_rotation
+        self.label_quaternion_to_rotate        = f"Quaternion to rotate (v) : " + label_quaternion_to_rotate
+        self.label_quaternion_pre_multiply     = f"Pre multiplication (qv)  : " + label_quaternion_pre_multiply
+        self.label_quaternion_pre_multiply_min = f"  - qv scalar min value  : {self.quaternion_pre_multiply_min:.3f}"
+        self.label_quaternion_pre_multiply_max = f"  - qv scalar max value  : {self.quaternion_pre_multiply_max:.3f}"
+        self.label_quaternion_rotated          = f"Quaternion rotated (v')  : " + label_quaternion_rotated
+        self.label_angle_rotation              = f"Angle of rotation        = {self.angle_rotation:8.3f} degrees"
 
         self.ax.text(
             1.3, 0, 0,
@@ -496,12 +546,12 @@ class PlotAgent :
         legend_elements = [
             Line2D([0], [0], color='red',     lw=1, label=self.label_quaternion_axis_rotation),
             Line2D([0], [0], color='green',   lw=1, label=self.label_quaternion_to_rotate),
-            Line2D([0], [0], color='blue',    lw=1, label=self.label_quaternion_pre_multiply),
+            Line2D([0], [0], color='white',   lw=1, label=self.label_quaternion_pre_multiply),
+            Line2D([0], [0], color='white',   lw=1, label=self.label_quaternion_pre_multiply_min),
+            Line2D([0], [0], color='white',   lw=1, label=self.label_quaternion_pre_multiply_max),
             Line2D([0], [0], color='magenta', lw=1, label=self.label_quaternion_rotated),
             Line2D([0], [0], color='white',   lw=1, label=self.label_angle_rotation)
         ]
-
-        print(nameMethod + " : MARKER 9")
 
         legend = self.ax.legend(
             handles=legend_elements,
@@ -515,9 +565,24 @@ class PlotAgent :
 
         # If the scalar part of the quaternion is not close in value to 0, then display its text in red
 
-        if abs(self.quaternion_pre_multiply.x) > 0.001 :
+        # if abs(self.quaternion_pre_multiply.x) > 0.001 :
 
-            legend.get_texts()[2].set_color("red")
+        hue_value = ((self.quaternion_pre_multiply.x) * 0.5) + 0.5
+
+        rgb_value_local = colorsys.hsv_to_rgb(
+
+            hue_value,  # hue (0–1)
+            1.0,  # saturation
+            1.0  # value
+        )
+
+        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+        print(nameMethod + f" : About to set legend color to = <{hue_value:f}, 1.0, 1.0>")
+        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+
+        legend.get_texts()[2].set_color(rgb_value_local)
 
         print(nameMethod + " : Exit")
 
@@ -629,7 +694,7 @@ class PlotAgent :
         #   - the 4 plots associated with each of the quaternions
         #   - the history plot associated with the pre multiplication quaternion.
 
-        self.plot_handle_quaternion_pre_multiply_history.remove()
+        # self.plot_handle_quaternion_rotated_history.remove()
         self.plot_handle_quaternion_rotated.remove()
         self.plot_handle_quaternion_pre_multiply.remove()
         self.plot_handle_quaternion_to_rotate.remove()
