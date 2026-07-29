@@ -1,5 +1,4 @@
 import sys
-import colorsys
 import math
 from   matplotlib        import font_manager
 import subprocess
@@ -10,11 +9,7 @@ import numpy             as np
 import numpy as np
 import quaternion
 
-# Import the Python Image Library, aka PIL.
-
-import json
-from PIL import Image
-from PIL.PngImagePlugin import PngInfo
+import colorsys
 
 from PlottingAgent import PlottingAgent
 
@@ -24,10 +19,6 @@ from PlottingAgent import PlottingAgent
 utility_quaternion_rotation = "/home/craig/local/source_code/haskell/HaskellQuaternionRotation/dist-newstyle/build/x86_64-linux/ghc-9.14.1/quaternion-0.1.0.0/x/quaternion/build/quaternion/quaternion"
 verbose_operation           = "False"
 
-show_plots = False
-
-plot_quaternion_pre_multiply_history = True
-plot_quaternion_rotated_history      = False
 
 rgb_value = colorsys.hsv_to_rgb(1.0, 1.0, 1.0)
 
@@ -36,7 +27,9 @@ class VectorManipulator :
 
     def __init__(self) :
 
-        self.title_plots = "Rotating a vector (v) around a quaternion (q)."
+        self.title_plots  = "Rotating a vector (v) around a quaternion (q)."
+
+        self.counter_loop = 0
 
         # Rotation parameters.
         # --------------------
@@ -73,11 +66,6 @@ class VectorManipulator :
         self.plottingAgent            = PlottingAgent(self.title_plots)
 
 
-    def start(self) :
-
-        self.run()
-
-
     def run(self) :
 
         nameMethod = "VectorManipulator::run"
@@ -85,16 +73,13 @@ class VectorManipulator :
 
         print(nameMethod + " : Enter")
 
-        self.set_values_from_command_line_args()
-
-        # Generate the plots.
-
-        self.generate_plots()
+        self._set_values_from_command_line_args()
+        self._generate_plots()
 
         print(nameMethod + " : Exit")
 
 
-    def set_values_from_command_line_args(self) :
+    def _set_values_from_command_line_args(self) :
 
         # Set values based on the arguments which were passed in from the command line.
 
@@ -192,15 +177,15 @@ class VectorManipulator :
         return self.quaternion_rotated
 
 
-    def perform_quaternion_operations(self) :
+    def _perform_quaternion_operations(self) :
 
         self.preMultiplyVectorUsingQuaternion()
         self.rotateVectorUsingQuaternion()
 
 
-    def update_plotting_agent(self) :
+    def _update_plotting_agent(self) :
 
-        nameMethod = "VectorManipulator::update_plotting_agent"
+        nameMethod = "VectorManipulator::_update_plotting_agent"
 
 
         # Pass the necessary data to the plotting agent.
@@ -217,9 +202,14 @@ class VectorManipulator :
             self.quaternion_pre_multiply,
             self.quaternion_rotated
         )
+        self.plottingAgent.set_view(
+
+            self.azimuth_view,
+            self.elevation_view
+        )
 
 
-    def generate_plot(
+    def _generate_plot(
 
             self,
             filename
@@ -227,51 +217,56 @@ class VectorManipulator :
 
         # Instruct the plotting agent to plot the data which was just passed to it.
 
-        self.plottingAgent.generate_plot(
+        self.plottingAgent.generate_plot(filename)
 
-            filename,
-            self.azimuth_view,
-            self.elevation_view
-        )
+
+    def _update_loop_parameters(self) :
+
+        self.counter_loop   += 1
+        angle_rotation_next  = (self.counter_loop * self.angle_rotation_increment) + self.angle_rotation_start
+
+        # The quaternionic rotation might stop, but the view can still keep spinning around.
+        #
+        # Check for this.
+
+        if angle_rotation_next <= self.angle_rotation_full :
+
+            self.angle_rotation = angle_rotation_next
+
+        self.azimuth_view = (self.counter_loop * self.azimuth_view_increment) + self.azimuth_view_start
+
+
+    def _generate_plots_display_diagnostics(self) :
+
+        nameMethod = "VectorManipulator::_generate_plots_display_diagnostics"
+
+
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+        print(nameMethod + f" : self.counter_loop = {self.counter_loop:d}")
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+        print(f"Azimuth view = {self.azimuth_view:f}")
 
 
     # Invoked by : VectorManipulator::run
 
-    def generate_plots(self) :
+    def _generate_plots(self) :
 
-        nameMethod         = "VectorManipulator::generate_plots"
+        nameMethod         = "VectorManipulator::_generate_plots"
 
 
         print(nameMethod + " : Enter")
 
-        counter = 0
-
         while self.azimuth_view <= 720 :
 
-            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-            print(nameMethod + f" : counter = {counter:d}")
-            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-            print(f"Azimuth view = {self.azimuth_view:f}")
+            self._generate_plots_display_diagnostics()
 
-            filename = f"rotation-{counter:04d}.png"
+            filename = f"rotation-{self.counter_loop:04d}.png"
 
-            self.perform_quaternion_operations()
-            self.update_plotting_agent()
-            self.generate_plot(filename)
+            self._perform_quaternion_operations()
+            self._update_plotting_agent()
+            self._generate_plot(filename)
 
-            # self.plot_result(filename)
-
-            # Update the loop parameters.
-
-            counter = counter + 1
-
-            angle_rotation_next = (counter * self.angle_rotation_increment) + self.angle_rotation_start
-
-            if angle_rotation_next <= self.angle_rotation_full :
-
-                self.angle_rotation = angle_rotation_next
-
-            self.azimuth_view = (counter * self.azimuth_view_increment) + self.azimuth_view_start
+            self._update_loop_parameters()
 
             print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
             print()
