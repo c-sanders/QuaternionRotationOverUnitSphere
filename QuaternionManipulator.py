@@ -11,7 +11,8 @@ import quaternion
 
 import colorsys
 
-from PlottingAgent import PlottingAgent
+import GlobalSettings
+from   PlottingAgent import PlottingAgent
 
 
 class QuaternionManipulator :
@@ -99,8 +100,8 @@ class QuaternionManipulator :
 
         result = subprocess.run(
             [
-             utility_quaternion_rotation,
-             verbose_operation,
+             GlobalSettings.utility_quaternion_rotation,
+             str(self.verbose_operation),
              operation_type,
              str(self.quaternion_to_rotate.x),
              str(self.quaternion_to_rotate.y),
@@ -137,8 +138,8 @@ class QuaternionManipulator :
 
         result = subprocess.run(
             [
-             utility_quaternion_rotation,
-             verbose_operation,
+             GlobalSettings.utility_quaternion_rotation,
+             str(self.verbose_operation),
              operation_type,
              str(self.quaternion_to_rotate.x),
              str(self.quaternion_to_rotate.y),
@@ -254,6 +255,7 @@ class QuaternionManipulator :
             filename = f"rotation-{self.counter_loop:04d}.png"
 
             self._perform_quaternion_operations()
+
             self._update_plotting_agent()
             self._generate_plot(filename)
 

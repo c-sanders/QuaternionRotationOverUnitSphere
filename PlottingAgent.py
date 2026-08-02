@@ -13,9 +13,8 @@ from PIL.PngImagePlugin import PngInfo
 
 import colorsys
 
+import GlobalSettings
 
-plot_quaternion_pre_multiply_history = True
-plot_quaternion_rotated_history      = False
 
 show_plots = False
 
@@ -52,6 +51,7 @@ class PlottingAgent :
         self.plot_handle_quaternion_pre_multiply_history = None
         self.plot_handle_quaternion_rotated              = None
         self.plot_handle_quaternion_rotated_history      = None
+        self.plot_handle_surface                         = None
 
         # Component arrays to hold the history of the rotated vector.
 
@@ -248,11 +248,56 @@ class PlottingAgent :
         )
 
 
-    def _plot_unit_sphere(
+    def _plot_unit_sphere_quaternion_pre_multiply(self) :
 
-            self,
-            axis
-    ) :
+        axis = self.ax1
+
+
+        # ----------------------------
+        # Plot the unit sphere.
+        # ----------------------------
+
+        u = np.linspace(0, 2 * np.pi, 100)
+        v_sphere = np.linspace(0, np.pi, 100)
+
+        x = np.outer(np.cos(u), np.sin(v_sphere))
+        y = np.outer(np.sin(u), np.sin(v_sphere))
+        z = np.outer(np.ones_like(u), np.cos(v_sphere))
+
+        hue_value = ((self.quaternion_pre_multiply.x) * 0.5) + 0.5
+
+        rgb_value = colorsys.hsv_to_rgb(
+
+            hue_value,  # hue (0–1)
+            1.0,  # saturation
+            1.0  # value
+        )
+
+        # If this sub-plot already contains a plot of a unit sphere, then delete it.
+
+        if self.plot_handle_surface is not None :
+
+            self.plot_handle_surface.remove()
+
+        self.plot_handle_surface = axis.plot_surface(x, y, z,
+                                                     color=rgb_value,
+                                                     alpha=0.2,
+                                                     linewidth=0
+                                                    )
+
+        axis.plot_wireframe(
+            x, y, z,
+            color='black',
+            linewidth=0.4,
+            rstride=4,
+            cstride=4
+        )
+
+
+    def _plot_unit_sphere_quaternion_rotation(self) :
+
+        axis = self.ax2
+
 
         # ----------------------------
         # Plot the unit sphere.
@@ -281,6 +326,15 @@ class PlottingAgent :
         #     cstride=5
         # )
 
+        hue_value = 0.5
+
+        rgb_value = colorsys.hsv_to_rgb(
+
+            hue_value,  # hue (0–1)
+            1.0,  # saturation
+            1.0  # value
+        )
+
         axis.plot_surface(
             x, y, z,
             color='lightyellow',
@@ -297,34 +351,14 @@ class PlottingAgent :
         )
 
 
-    def plot_quaternions(
+    def plot_quaternion_pre_multiply(self) :
 
-            self,
-            axis
-    ) :
+        nameMethod = "PlottingAgent::plot_quaternion_pre_multiply"
 
-        nameMethod = "PlottingAgent::plot_quaternions"
+        sub_plot = self.ax1
 
 
-        self.plot_handle_quaternion_axis_rotation = axis.quiver(
-
-            0, 0, 0,
-            self.quaternion_axis_rotation.x, self.quaternion_axis_rotation.y, self.quaternion_axis_rotation.z,
-            color='red',
-            linewidth=1,
-            arrow_length_ratio=0.1
-        )
-
-        self.plot_handle_quaternion_to_rotate = axis.quiver(
-
-            0, 0, 0,
-            self.quaternion_to_rotate.x, self.quaternion_to_rotate.y, self.quaternion_to_rotate.z,
-            color='green',
-            linewidth=1,
-            arrow_length_ratio=0.1
-        )
-
-        self.plot_handle_quaternion_pre_multiply = axis.quiver(
+        self.plot_handle_quaternion_pre_multiply = self.ax1.quiver(
 
             0, 0, 0,
             self.quaternion_pre_multiply.x, self.quaternion_pre_multiply.y, self.quaternion_pre_multiply.z,
@@ -333,7 +367,65 @@ class PlottingAgent :
             arrow_length_ratio=0.1
         )
 
-        self.plot_handle_quaternion_rotated = axis.quiver(
+        if GlobalSettings.plot_quaternion_pre_multiply_history :
+
+            hue_value = ((self.quaternion_pre_multiply.x) * 0.5) + 0.5
+
+            rgb_value = colorsys.hsv_to_rgb(
+
+                hue_value,  # hue (0–1)
+                1.0,  # saturation
+                1.0  # value
+            )
+
+            markersize_value = (hue_value * 4) + 2
+
+            if self.quaternion_pre_multiply.w < 0 :
+
+                marker_value = 'v'
+
+            else :
+
+                marker_value = '^'
+
+            sub_plot.plot(
+
+                self.quaternion_pre_multiply.x,
+                self.quaternion_pre_multiply.y,
+                self.quaternion_pre_multiply.z,
+                marker=marker_value,
+                markersize=markersize_value,
+                linestyle='-',
+                color=rgb_value
+            )
+
+
+    def plot_quaternion_rotation(self) :
+
+        nameMethod = "PlottingAgent::plot_quaternion_rotation"
+
+        sub_plot = self.ax2
+
+
+        self.plot_handle_quaternion_axis_rotation = sub_plot.quiver(
+
+            0, 0, 0,
+            self.quaternion_axis_rotation.x, self.quaternion_axis_rotation.y, self.quaternion_axis_rotation.z,
+            color='red',
+            linewidth=1,
+            arrow_length_ratio=0.1
+        )
+
+        self.plot_handle_quaternion_to_rotate = sub_plot.quiver(
+
+            0, 0, 0,
+            self.quaternion_to_rotate.x, self.quaternion_to_rotate.y, self.quaternion_to_rotate.z,
+            color='green',
+            linewidth=1,
+            arrow_length_ratio=0.1
+        )
+
+        self.plot_handle_quaternion_rotated = sub_plot.quiver(
 
             0, 0, 0,
             self.quaternion_rotated.x, self.quaternion_rotated.y, self.quaternion_rotated.z,
@@ -359,9 +451,9 @@ class PlottingAgent :
         print(nameMethod + " : self.z_components = ")
         print(self.z_components)
 
-        if plot_quaternion_rotated_history :
+        if GlobalSettings.plot_quaternion_rotated_history :
 
-            axis.plot(
+            sub_plot.plot(
 
                 self.quaternion_rotated.x,
                 self.quaternion_rotated.y,
@@ -369,38 +461,6 @@ class PlottingAgent :
                 marker='.',
                 linestyle='-',
                 color='magenta'
-            )
-
-        hue_value = ((self.quaternion_pre_multiply.x) * 0.5) + 0.5
-
-        rgb_value = colorsys.hsv_to_rgb(
-
-            hue_value,  # hue (0–1)
-            1.0,  # saturation
-            1.0  # value
-        )
-
-        if plot_quaternion_pre_multiply_history :
-
-            markersize_value = (hue_value * 4) + 2
-
-            if self.quaternion_pre_multiply.w < 0 :
-
-                marker_value = 'v'
-
-            else :
-
-                marker_value = '^'
-
-            axis.plot(
-
-                self.quaternion_pre_multiply.x,
-                self.quaternion_pre_multiply.y,
-                self.quaternion_pre_multiply.z,
-                marker=marker_value,
-                markersize=markersize_value,
-                linestyle='-',
-                color=rgb_value
             )
 
 
@@ -444,7 +504,11 @@ class PlottingAgent :
                 )
 
 
-    def add_labels_to_plot(self) :
+    def add_labels_to_plot(
+
+            self,
+            axis
+    ) :
 
         # Label vector tip
 
@@ -486,19 +550,19 @@ class PlottingAgent :
         self.label_quaternion_rotated          = f"Quaternion rotated (v')  : " + label_quaternion_rotated
         self.label_angle_rotation              = f"Angle of rotation        = {self.angle_rotation:8.3f} degrees"
 
-        self.ax.text(
+        axis.text(
             1.3, 0, 0,
             "x",
             color="black"
         )
 
-        self.ax.text(
+        axis.text(
             0, 1.3, 0,
             "y",
             color="black"
         )
 
-        self.ax.text(
+        axis.text(
             0, 0, 1.3,
             "z",
             color="black"
@@ -626,7 +690,11 @@ class PlottingAgent :
         print(nameMethod + " : Exit")
 
 
-    def set_title_and_legend(self):
+    def set_title_and_legend(
+
+            self,
+            axis
+    ):
 
         nameMethod = "set_title_and_legend"
 
@@ -640,7 +708,7 @@ class PlottingAgent :
         # ax.set_xlabel('x')
         # ax.set_ylabel('y')
         # ax.set_zlabel('z')
-        self.ax.set_title(self.title_plots)
+        axis.set_title(self.title_plots)
 
         legend_elements = [
             Line2D([0], [0], color='red',             lw=1, label=self.label_quaternion_axis_rotation),
@@ -652,7 +720,7 @@ class PlottingAgent :
             Line2D([0], [0], linestyle='None', marker=None, label=self.label_angle_rotation)
         ]
 
-        legend = self.ax.legend(
+        legend = axis.legend(
             handles=legend_elements,
             prop={
                 "family": "Liberation Mono",
@@ -771,13 +839,11 @@ class PlottingAgent :
 
         # Sub-plot self.ax1
 
-        axis = self.ax1
+        self.plot_quaternion_pre_multiply()
+        # self.add_labels_to_plot(axis)
+        # self.set_title_and_legend(axis)
 
-        self.plot_quaternions(axis)
-        self.add_labels_to_plot()
-        self.set_title_and_legend()
-
-        axis.view_init(
+        self.ax1.view_init(
 
             elev=self.elevation_view,
             azim=self.azimuth_view
@@ -785,13 +851,11 @@ class PlottingAgent :
 
         # Sub-plot self.ax2
 
-        axis = self.ax2
+        self.plot_quaternion_rotation()
+        # self.add_labels_to_plot(axis)
+        # self.set_title_and_legend(axis)
 
-        self.plot_quaternions(axis)
-        self.add_labels_to_plot()
-        self.set_title_and_legend()
-
-        axis.view_init(
+        self.ax2.view_init(
 
             elev=self.elevation_view,
             azim=self.azimuth_view
