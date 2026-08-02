@@ -92,7 +92,7 @@ class PlottingAgent :
 
         print(nameMethod + " : Enter")
 
-        self._plot_unit_sphere(axis)
+        # self._plot_unit_sphere_quaternion_pre_multiply()
         self._plot_axes(axis)
 
         print(nameMethod + " : About to invoke : self.set_aspect_ratios_and_extents")
@@ -114,7 +114,7 @@ class PlottingAgent :
 
         print(nameMethod + " : Enter")
 
-        self._plot_unit_sphere(axis)
+        self._plot_unit_sphere_quaternion_rotation()
         self._plot_axes(axis)
 
         print(nameMethod + " : About to invoke : self.set_aspect_ratios_and_extents")
@@ -264,7 +264,13 @@ class PlottingAgent :
         y = np.outer(np.sin(u), np.sin(v_sphere))
         z = np.outer(np.ones_like(u), np.cos(v_sphere))
 
-        hue_value = ((self.quaternion_pre_multiply.x) * 0.5) + 0.5
+        if self.quaternion_pre_multiply is None :
+
+            hue_value = 0.5
+
+        else :
+
+            hue_value = ((self.quaternion_pre_multiply.x) * 0.5) + 0.5
 
         rgb_value = colorsys.hsv_to_rgb(
 
@@ -337,7 +343,7 @@ class PlottingAgent :
 
         axis.plot_surface(
             x, y, z,
-            color='lightyellow',
+            color=rgb_value,
             alpha=0.2,
             linewidth=0
         )
@@ -358,6 +364,8 @@ class PlottingAgent :
         sub_plot = self.ax1
 
 
+        self._plot_unit_sphere_quaternion_pre_multiply()
+
         self.plot_handle_quaternion_pre_multiply = self.ax1.quiver(
 
             0, 0, 0,
@@ -366,6 +374,8 @@ class PlottingAgent :
             linewidth=1,
             arrow_length_ratio=0.1
         )
+
+        # If w = 0, plot this quaternion
 
         if GlobalSettings.plot_quaternion_pre_multiply_history :
 
