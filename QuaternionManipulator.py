@@ -91,7 +91,7 @@ class QuaternionManipulator :
         self.quaternion_to_rotate     = np.quaternion(0, self.vector_x, self.vector_y, self.vector_z)
 
 
-    def preMultiplyVectorUsingQuaternion(self) :
+    def _preMultiplyVectorUsingQuaternion(self) :
 
         nameMethod     = "preMultiplyVectorUsingQuaternion"
 
@@ -131,7 +131,7 @@ class QuaternionManipulator :
         return self.quaternion_pre_multiply
 
 
-    def rotateVectorUsingQuaternion(self) :
+    def _rotateVectorUsingQuaternion(self) :
 
         operation_type = "rotation"
 
@@ -171,8 +171,8 @@ class QuaternionManipulator :
 
     def _perform_quaternion_operations(self) :
 
-        self.preMultiplyVectorUsingQuaternion()
-        self.rotateVectorUsingQuaternion()
+        self._preMultiplyVectorUsingQuaternion()
+        self._rotateVectorUsingQuaternion()
 
 
     def _update_plotting_agent(self) :

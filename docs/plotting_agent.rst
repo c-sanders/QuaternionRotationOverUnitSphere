@@ -25,3 +25,24 @@ Class : PlottingAgent
    :private-members:
    :undoc-members:
    :show-inheritance:
+
+
+----
+
+Source code : QuaternionManipulator.py
+-----------------------------------------------------
+
+.. literalinclude:: ../PlottingAgent.py
+   :language: python
+   :linenos:
+
+
+----
+
+PlottingAgent UML Sequence diagram
+==================================
+
+.. image:: _static/images/d.svg
+   :alt: PlottingAgent UML Sequence diagram
+   :align: center
+   :width: 60%

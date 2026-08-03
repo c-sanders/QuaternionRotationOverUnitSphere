@@ -17,12 +17,21 @@ release = '0.0.1'
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
+    "sphinxcontrib.mermaid",
 ]
+
+mermaid_config_file = "_static/mermaid-config.json"
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
+# autodoc_member_order = "bysource"
 
+html_static_path = ['_static']
+
+html_css_files = [
+    "custom.css",
+]
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output

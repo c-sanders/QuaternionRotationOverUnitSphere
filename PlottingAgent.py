@@ -4,6 +4,9 @@ matplotlib.use("QtAgg")
 import matplotlib.pyplot as plt
 from   matplotlib.lines  import Line2D
 from   matplotlib.ticker import MultipleLocator
+from   matplotlib.colors import LinearSegmentedColormap
+from   matplotlib.cm     import ScalarMappable
+from   matplotlib.colors import Normalize
 import json
 
 # Import the Python Image Library, aka PIL.
@@ -17,6 +20,19 @@ import GlobalSettings
 
 
 show_plots = False
+
+my_colormap = LinearSegmentedColormap.from_list(
+    "my_rainbow",
+    [
+        "red",
+        "orange",
+        "yellow",
+        "green",
+        "blue",
+        "indigo",
+        "violet"
+    ]
+)
 
 
 class PlottingAgent :
@@ -83,9 +99,35 @@ class PlottingAgent :
         print(nameMethod + " : Exit")
 
 
+    def _add_colormap(self) :
+
+        nameMethod = "PlottingAgent::_add_colormap"
+
+
+        # Place a color scale on the right hand side of this sub-plot.
+
+        norm = Normalize(vmin=-1.0, vmax=1.0)
+
+        sm = ScalarMappable(
+            norm=norm,
+            cmap=my_colormap
+        )
+        sm.set_array([])
+
+        cbar = self.fig.colorbar(
+            sm,
+            ax=self.ax1,
+            location="left",
+            pad=0.05,
+            shrink=0.75
+        )
+
+        cbar.set_label("qv scalar component (w)")
+
+
     def _initialise_subplot_1(self) :
 
-        nameMethod = "PlottingAgent::initialise_subplot_1"
+        nameMethod = "PlottingAgent::_initialise_subplot_1"
 
         axis = self.ax1
 
@@ -101,6 +143,7 @@ class PlottingAgent :
         self._fill_panes(axis)
         self._configure_grid(axis)
         # self.create_static_labels()
+        self._add_colormap()
 
         print(nameMethod + " : Exit")
 
@@ -151,7 +194,7 @@ class PlottingAgent :
         self.quaternion_rotated       = quaternion_rotated
 
 
-    def format_component(
+    def _format_component(
 
             self,
             name,
@@ -180,7 +223,7 @@ class PlottingAgent :
                     return f" {name}{value:.3f}"
 
 
-    def generate_string(
+    def _generate_string(
 
             self,
             scalar_value,
@@ -357,7 +400,7 @@ class PlottingAgent :
         )
 
 
-    def plot_quaternion_pre_multiply(self) :
+    def _plot_quaternion_pre_multiply(self) :
 
         nameMethod = "PlottingAgent::plot_quaternion_pre_multiply"
 
@@ -375,7 +418,24 @@ class PlottingAgent :
             arrow_length_ratio=0.1
         )
 
-        # If w = 0, plot this quaternion
+        # If w = 0, plot this quaternion in the pure imaginary space as well.
+
+        if abs(self.quaternion_pre_multiply.w) < 0.001 :
+
+            print(nameMethod + " : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+            print(nameMethod + " : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+            print(nameMethod + " : Plotting vector in the pure imaginary space")
+            print(nameMethod + " : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+            print(nameMethod + " : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+
+            self.ax2.quiver(
+
+                0, 0, 0,
+                self.quaternion_pre_multiply.x, self.quaternion_pre_multiply.y, self.quaternion_pre_multiply.z,
+                color='blue',
+                linewidth=1,
+                arrow_length_ratio=0.1
+            )
 
         if GlobalSettings.plot_quaternion_pre_multiply_history :
 
@@ -410,7 +470,7 @@ class PlottingAgent :
             )
 
 
-    def plot_quaternion_rotation(self) :
+    def _plot_quaternion_rotation(self) :
 
         nameMethod = "PlottingAgent::plot_quaternion_rotation"
 
@@ -474,7 +534,7 @@ class PlottingAgent :
             )
 
 
-    def check_min_max_values(self) :
+    def _check_min_max_values(self) :
 
         if (
             (self.quaternion_pre_multiply_max is None) or
@@ -514,7 +574,7 @@ class PlottingAgent :
                 )
 
 
-    def add_labels_to_plot(
+    def _add_labels_to_plot(
 
             self,
             axis
@@ -597,7 +657,7 @@ class PlottingAgent :
         # )
 
 
-    def encode_metadata(self) :
+    def _encode_metadata(self) :
 
         nameMethod = "encode_metadata"
 
@@ -637,7 +697,7 @@ class PlottingAgent :
         }
 
 
-    def display_metadata(
+    def _display_metadata(
 
             self,
             filename
@@ -700,7 +760,69 @@ class PlottingAgent :
         print(nameMethod + " : Exit")
 
 
-    def set_title_and_legend(
+    # Invoked by : PlottingAgent::generate_plot
+
+    def _set_title_and_legend_quaternion_pre_multiply(self) :
+
+        nameMethod = "PlottingAgent::_set_title_and_legend_quaternion_pre_multiply"
+
+
+        print(nameMethod + " : Enter")
+
+        # ----------------------------
+        # Labels
+        # ----------------------------
+
+        # ax.set_xlabel('x')
+        # ax.set_ylabel('y')
+        # ax.set_zlabel('z')
+        # self.ax1.set_title(self.title_plots)
+
+        legend_elements = [
+            # Line2D([0], [0], color='red',             lw=1, label=self.label_quaternion_axis_rotation),
+            # Line2D([0], [0], color='green',           lw=1, label=self.label_quaternion_to_rotate),
+            Line2D([0], [0], color='none',     lw=1, label=self.label_quaternion_pre_multiply),
+            Line2D([0], [0], linestyle='None', marker=None, label=self.label_quaternion_pre_multiply_min),
+            Line2D([0], [0], linestyle='None', marker=None, label=self.label_quaternion_pre_multiply_max),
+            # Line2D([0], [0], color='magenta',         lw=1, label=self.label_quaternion_rotated),
+            Line2D([0], [0], linestyle='None', marker=None, label=self.label_angle_rotation)
+        ]
+
+        legend = self.ax1.legend(
+            handles=legend_elements,
+            prop={
+                "family": "Liberation Mono",
+                "size": 10
+            },
+            loc='upper right',
+            fontsize=10
+        )
+
+        # If the scalar part of the quaternion is not close in value to 0, then display its text in red
+
+        # if abs(self.quaternion_pre_multiply.x) > 0.001 :
+
+        hue_value = ((self.quaternion_pre_multiply.w) * 0.5) + 0.5
+
+        rgb_value_local = colorsys.hsv_to_rgb(
+
+            hue_value,  # hue (0–1)
+            1.0,  # saturation
+            1.0  # value
+        )
+
+        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+        print(nameMethod + f" : About to set legend color to = <{hue_value:f}, 1.0, 1.0>")
+        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+
+        legend.get_texts()[2].set_color(rgb_value_local)
+
+        print(nameMethod + " : Exit")
+
+
+    def _set_title_and_legend(
 
             self,
             axis
@@ -788,7 +910,7 @@ class PlottingAgent :
         axis.zaxis.set_major_locator(MultipleLocator(1))
 
 
-    def add_metadata_to_file(
+    def _add_metadata_to_file(
 
             self,
             filename
@@ -805,9 +927,9 @@ class PlottingAgent :
             img.save(filename, pnginfo=info)
 
 
-    def plot_result_display_diagnostics(self) :
+    def _plot_result_display_diagnostics(self) :
 
-        nameMethod = "PlottingAgent::plot_result_display_diagnostics"
+        nameMethod = "PlottingAgent::_plot_result_display_diagnostics"
 
 
         print(nameMethod + " : Enter")
@@ -832,7 +954,7 @@ class PlottingAgent :
         self.elevation_view = elevation_view
 
 
-    # Client : VectorManipulator::generate_plots
+    # Invoked by : QuaternionManipulator::generate_plots
 
     def generate_plot(
 
@@ -843,15 +965,15 @@ class PlottingAgent :
         nameMethod = "PlottingAgent::generate_plot"
 
 
-        self.plot_result_display_diagnostics()
+        self._plot_result_display_diagnostics()
 
         # We need to generate the sub-plots in both self.ax1 and self.ax2.
 
         # Sub-plot self.ax1
 
-        self.plot_quaternion_pre_multiply()
+        self._plot_quaternion_pre_multiply()
         # self.add_labels_to_plot(axis)
-        # self.set_title_and_legend(axis)
+        self._set_title_and_legend_quaternion_pre_multiply()
 
         self.ax1.view_init(
 
@@ -912,7 +1034,7 @@ class PlottingAgent :
         print(nameMethod + " : Exit")
 
 
-    def destroy_plot(self) :
+    def _destroy_plot(self) :
 
         nameMethod = "PlottingAgent::destroy_plot"
 
