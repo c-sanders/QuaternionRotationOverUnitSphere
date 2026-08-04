@@ -16,9 +16,12 @@ release = '0.0.1'
 
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
     "sphinxcontrib.mermaid",
 ]
+
+autosummary_generate = True
 
 mermaid_config_file = "_static/mermaid-config.json"
 

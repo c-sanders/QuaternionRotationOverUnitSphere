@@ -81,6 +81,18 @@ class PlottingAgent :
         self.rgb_value_min = colorsys.hsv_to_rgb(0, 0, 1.0)
         self.rgb_value_max = colorsys.hsv_to_rgb(0, 0, 1.0)
 
+        self.label_quaternion_axis_rotation    = ""
+        self.label_quaternion_to_rotate        = ""
+        self.label_quaternion_pre_multiply     = ""
+        self.label_quaternion_pre_multiply_min = ""
+        self.label_quaternion_pre_multiply_max = ""
+        self.label_quaternion_rotated          = ""
+        self.label_angle_rotation              = ""
+
+        self.title_plot       = ""
+        self.title_sub_plot_1 = ""
+        self.title_sub_plot_2 = ""
+
         self._initialise_plot()
 
 
@@ -470,12 +482,14 @@ class PlottingAgent :
             )
 
 
-    def _plot_quaternion_rotation(self) :
+    def _plot_quaternions(self) :
 
         nameMethod = "PlottingAgent::plot_quaternion_rotation"
 
         sub_plot = self.ax2
 
+
+        # Plot an arrow from the origin which represents : the axis of rotation
 
         self.plot_handle_quaternion_axis_rotation = sub_plot.quiver(
 
@@ -486,6 +500,8 @@ class PlottingAgent :
             arrow_length_ratio=0.1
         )
 
+        # Plot an arrow from the origin which represents : the vector/quaternion which is to be rotated.
+
         self.plot_handle_quaternion_to_rotate = sub_plot.quiver(
 
             0, 0, 0,
@@ -494,6 +510,8 @@ class PlottingAgent :
             linewidth=1,
             arrow_length_ratio=0.1
         )
+
+        # Plot an arrow from the origin which represents : the vector/quaternion after it has been rotated.
 
         self.plot_handle_quaternion_rotated = sub_plot.quiver(
 
@@ -760,11 +778,11 @@ class PlottingAgent :
         print(nameMethod + " : Exit")
 
 
-    # Invoked by : PlottingAgent::generate_plot
+    # Invoked by : PlottingAgent::_generate_subplot_1
 
-    def _set_title_and_legend_quaternion_pre_multiply(self) :
+    def _set_title_and_legend_subplot_1(self) :
 
-        nameMethod = "PlottingAgent::_set_title_and_legend_quaternion_pre_multiply"
+        nameMethod = "PlottingAgent::_set_title_and_legend_subplot_1"
 
 
         print(nameMethod + " : Enter")
@@ -776,12 +794,14 @@ class PlottingAgent :
         # ax.set_xlabel('x')
         # ax.set_ylabel('y')
         # ax.set_zlabel('z')
-        # self.ax1.set_title(self.title_plots)
+        # self.fig.set_title("Poop")
+
+        self.ax1.set_title(self.title_sub_plot_1)
 
         legend_elements = [
             # Line2D([0], [0], color='red',             lw=1, label=self.label_quaternion_axis_rotation),
             # Line2D([0], [0], color='green',           lw=1, label=self.label_quaternion_to_rotate),
-            Line2D([0], [0], color='none',     lw=1, label=self.label_quaternion_pre_multiply),
+            Line2D([0], [0], color='none',     lw=1,        label=self.label_quaternion_pre_multiply),
             Line2D([0], [0], linestyle='None', marker=None, label=self.label_quaternion_pre_multiply_min),
             Line2D([0], [0], linestyle='None', marker=None, label=self.label_quaternion_pre_multiply_max),
             # Line2D([0], [0], color='magenta',         lw=1, label=self.label_quaternion_rotated),
@@ -794,13 +814,9 @@ class PlottingAgent :
                 "family": "Liberation Mono",
                 "size": 10
             },
-            loc='upper right',
+            loc='lower center',
             fontsize=10
         )
-
-        # If the scalar part of the quaternion is not close in value to 0, then display its text in red
-
-        # if abs(self.quaternion_pre_multiply.x) > 0.001 :
 
         hue_value = ((self.quaternion_pre_multiply.w) * 0.5) + 0.5
 
@@ -822,16 +838,30 @@ class PlottingAgent :
         print(nameMethod + " : Exit")
 
 
-    def _set_title_and_legend(
+    # Invoked by : _generate_subplot_2()
 
-            self,
-            axis
-    ):
+    def _set_title_and_legend_subplot_2(self):
 
-        nameMethod = "set_title_and_legend"
+        """
+        Set the title and legend for the specified plot or sub-plot.
+
+        This method sets the title and legend for the plot or sub-plot which was passed to the argument axis.
+
+        Args:
+            axis (matplotlib.axes.Axes):
+                The plot or sub-plot which is to be operated on.
+
+        Returns:
+            None:
+                This method only updates the internal state of the object.
+        """
+
+        nameMethod = "PlottingAgent::_set_title_and_legend_subplot_2"
 
 
         print(nameMethod + " : Enter")
+
+        self.ax2.set_title(self.title_sub_plot_2)
 
         # ----------------------------
         # Labels
@@ -840,7 +870,6 @@ class PlottingAgent :
         # ax.set_xlabel('x')
         # ax.set_ylabel('y')
         # ax.set_zlabel('z')
-        axis.set_title(self.title_plots)
 
         legend_elements = [
             Line2D([0], [0], color='red',             lw=1, label=self.label_quaternion_axis_rotation),
@@ -852,7 +881,7 @@ class PlottingAgent :
             Line2D([0], [0], linestyle='None', marker=None, label=self.label_angle_rotation)
         ]
 
-        legend = axis.legend(
+        legend = self.ax2.legend(
             handles=legend_elements,
             prop={
                 "family": "Liberation Mono",
@@ -943,6 +972,19 @@ class PlottingAgent :
         print(nameMethod + " : Exit")
 
 
+    def set_titles(
+
+        self,
+        title_plot,
+        title_sub_plot_1,
+        title_sub_plot_2
+    ) :
+
+        self.title_plot       = title_plot
+        self.title_sub_plot_1 = title_sub_plot_1
+        self.title_sub_plot_2 = title_sub_plot_2
+
+
     def set_view(
 
             self,
@@ -953,6 +995,111 @@ class PlottingAgent :
         self.azimuth_view   = azimuth_view
         self.elevation_view = elevation_view
 
+
+    def _generate_subplot_1(self) :
+
+        nameMethod = "PlottingAgent::_generate_subplot_1"
+
+
+        print(nameMethod + " : Enter")
+
+        self._plot_quaternion_pre_multiply()
+        # self.add_labels_to_plot(axis)
+        self._set_title_and_legend_subplot_1()
+
+        self.ax1.view_init(
+
+            elev=self.elevation_view,
+            azim=self.azimuth_view
+        )
+
+        print(nameMethod + " : Exit")
+
+
+    def _generate_subplot_2(self) :
+
+        nameMethod = "PlottingAgent::_generate_subplot_2"
+
+
+        print(nameMethod + " : Enter")
+
+        self._plot_quaternions()
+        # self.add_labels_to_plot(axis)
+        self._set_title_and_legend_subplot_2()
+
+        self.ax2.view_init(
+
+            elev=self.elevation_view,
+            azim=self.azimuth_view
+        )
+
+        print(nameMethod + " : Exit")
+
+
+    def _save_plot_to_file(
+
+            self,
+            filename
+    ) :
+
+        nameMethod = "PlottingAgent::_save_plot_to_file"
+
+
+        print(nameMethod + " : Enter")
+
+        print("Saving the figure to file : " + str(filename) + "\n")
+
+        self.fig.savefig(
+
+            filename,
+            dpi=300,
+            bbox_inches="tight"
+        )
+
+        print(nameMethod + " : Exit")
+
+
+    def _encode_metadata_into_file(
+
+            self,
+            filename
+    ) :
+
+        nameMethod = "PlottingAgent::_encode_metadata_and_add_to_file"
+
+
+        print(nameMethod + " : Enter")
+
+        self._encode_metadata()
+        self._add_metadata_to_file(filename)
+        self._display_metadata(filename)
+
+        print(nameMethod + " : Exit")
+
+
+    def _remove_artifacts_from_subplots(self) :
+
+        nameMethod = "PlottingAgent::_remove_artifacts_from_subplots"
+
+
+        print(nameMethod + " : Enter")
+
+        # Remove certain artifacts that are used by the sub-plot self.ax1.
+        #
+        # Keep the following artifacts however, because they don't change and will simply get redrawn in the next plot.
+        #
+        #   self.plot_handle_quaternion_to_rotate.remove()
+        #   self.plot_handle_quaternion_axis_rotation.remove()
+        #
+        # Also, keep the history plot points as they just get added to.
+
+        self.plot_handle_quaternion_rotated.remove()
+
+        # Remove the artifacts from the plot self.ax2
+
+        self.plot_handle_quaternion_pre_multiply.remove()
+
+        print(nameMethod + " : Exit")
 
     # Invoked by : QuaternionManipulator::generate_plots
 
@@ -965,71 +1112,31 @@ class PlottingAgent :
         nameMethod = "PlottingAgent::generate_plot"
 
 
+        print(nameMethod + " : Enter")
+
         self._plot_result_display_diagnostics()
 
-        # We need to generate the sub-plots in both self.ax1 and self.ax2.
+        # Set the title for the entire plot.
 
-        # Sub-plot self.ax1
-
-        self._plot_quaternion_pre_multiply()
-        # self.add_labels_to_plot(axis)
-        self._set_title_and_legend_quaternion_pre_multiply()
-
-        self.ax1.view_init(
-
-            elev=self.elevation_view,
-            azim=self.azimuth_view
+        self.fig.suptitle(
+            self.title_plot,
+            fontsize=14
         )
 
-        # Sub-plot self.ax2
+        # Generate the sub-plots for both self.ax1 and self.ax2.
 
-        self.plot_quaternion_rotation()
-        # self.add_labels_to_plot(axis)
-        # self.set_title_and_legend(axis)
+        self._generate_subplot_1()
+        self._generate_subplot_2()
 
-        self.ax2.view_init(
+        self._save_plot_to_file(filename)
 
-            elev=self.elevation_view,
-            azim=self.azimuth_view
-        )
+        self._encode_metadata_into_file(filename)
 
-        print("Saving the figure to file : " + str(filename) + "\n")
-
-        self.fig.savefig(
-
-            filename,
-            dpi=300,
-            bbox_inches="tight"
-        )
-
-        self.encode_metadata()
-        self.add_metadata_to_file(filename)
-        self.display_metadata(filename)
-
-        if show_plots:
+        if show_plots :
 
             plt.show()
 
-        # Keep the core of the plot and delete everything else.
-        #
-        # Keep;
-        #
-        #   - the axes
-        #   - the grid associated with the axes
-        #   - the unit sphere.
-        #
-        # Delete;
-        #
-        #   - the legend
-        #   - the 4 plots associated with each of the quaternions
-        #   - the history plot associated with the pre multiplication quaternion.
-
-        # self.plot_handle_quaternion_rotated_history.remove()
-        self.plot_handle_quaternion_rotated.remove()
-        self.plot_handle_quaternion_pre_multiply.remove()
-        self.plot_handle_quaternion_to_rotate.remove()
-        self.plot_handle_quaternion_axis_rotation.remove()
-
+        self._remove_artifacts_from_subplots()
 
         print(nameMethod + " : Exit")
 

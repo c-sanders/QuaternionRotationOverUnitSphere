@@ -18,3 +18,4 @@ documentation for details.
    quaternion_rotation_over_unit_sphere
    plotting_agent
    quaternion_manipulator
+   generated/PlottingAgent.PlottingAgent

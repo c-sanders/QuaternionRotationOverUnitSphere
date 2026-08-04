@@ -185,6 +185,13 @@ class QuaternionManipulator :
         print(nameMethod + " : self.angle_rotation = " + str(self.angle_rotation))
         print(nameMethod + " : About to invoke : plotAgent.set_angle_rotation")
 
+        self.plottingAgent.set_titles(
+
+            "Progression of quaternions as angle of rotation increases.",
+            r"$qv$ in $S^{3}$ with $w=0$",
+            "qvq'"
+        )
+
         self.plottingAgent.set_angle_rotation(self.angle_rotation)
 
         self.plottingAgent.set_quaternions(

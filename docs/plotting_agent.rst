@@ -1,6 +1,5 @@
 Module : PlottingAgent
 ======================
-----
 
 Module overview
 ---------------
@@ -15,22 +14,25 @@ This class:
 * This object will generate the required plots.
 
 
-----
-
 Class : PlottingAgent
----------------
+---------------------
 
-.. automodule:: PlottingAgent
+.. autoclass:: PlottingAgent.PlottingAgent
    :members:
    :private-members:
    :undoc-members:
    :show-inheritance:
 
 
-----
+.. autosummary::
+   :toctree: generated
 
-Source code : QuaternionManipulator.py
------------------------------------------------------
+
+   PlottingAgent.PlottingAgent
+
+
+Source code : PlottingAgent.py
+------------------------------
 
 .. literalinclude:: ../PlottingAgent.py
    :language: python
@@ -39,10 +41,26 @@ Source code : QuaternionManipulator.py
 
 ----
 
-PlottingAgent UML Sequence diagram
-==================================
+PlottingAgent UML Sequence diagram for public methods only
+==========================================================
 
-.. image:: _static/images/d.svg
-   :alt: PlottingAgent UML Sequence diagram
+.. image:: _static/images/e.svg
+   :alt: PlottingAgent UML Sequence diagram for public methods only
+   :align: center
+   :width: 60%
+
+PlottingAgent UML Sequence diagram for the method : __method__
+==============================================================
+
+.. image:: _static/images/f.svg
+   :alt: PlottingAgent UML Sequence diagram for the method : __method__
+   :align: center
+   :width: 60%
+
+PlottingAgent UML Sequence diagram for the method : _initialise_plot
+====================================================================
+
+.. image:: _static/images/g.svg
+   :alt: PlottingAgent UML Sequence diagram for the method : _initialise_plot
    :align: center
    :width: 60%
