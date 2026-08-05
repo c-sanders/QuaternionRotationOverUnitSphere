@@ -10,3 +10,13 @@ rgb_value = colorsys.hsv_to_rgb(1.0, 1.0, 1.0)
 
 plot_quaternion_pre_multiply_history = True
 plot_quaternion_rotated_history      = True
+
+title_plot       = "Progression of various quaternions as angle of rotation increases."
+title_sub_plot_1 = r"$qv$ in $S^{3}$ with $w=0$"
+title_sub_plot_2 = r"qvq'"
+
+display_legend           = True
+display_legend_subplot_1 = False
+display_legend_subplot_2 = False
+
+title_colormap = "Value of w for the 4d hyperspheres"
