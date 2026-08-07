@@ -19,6 +19,9 @@ class QuaternionManipulator :
 
     def __init__(self) :
 
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
+
+
         self.title_plots  = "Rotating a vector (v) around a quaternion (q)."
 
         self.counter_loop = 0
@@ -60,7 +63,7 @@ class QuaternionManipulator :
 
     def run(self) :
 
-        nameMethod = "VectorManipulator::run"
+        nameMethod  = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
 
         print(nameMethod + " : Enter")
@@ -72,6 +75,9 @@ class QuaternionManipulator :
 
 
     def _set_values_from_command_line_args(self) :
+
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
+
 
         # Set values based on the arguments which were passed in from the command line.
 
@@ -93,7 +99,7 @@ class QuaternionManipulator :
 
     def _preMultiplyVectorUsingQuaternion(self) :
 
-        nameMethod     = "preMultiplyVectorUsingQuaternion"
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
         operation_type = "partial_multiplication"
 
@@ -177,7 +183,7 @@ class QuaternionManipulator :
 
     def _update_plotting_agent(self) :
 
-        nameMethod = "VectorManipulator::_update_plotting_agent"
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
 
         # Pass the necessary data to the plotting agent.
@@ -230,7 +236,7 @@ class QuaternionManipulator :
 
     def _generate_plots_display_diagnostics(self) :
 
-        nameMethod = "VectorManipulator::_generate_plots_display_diagnostics"
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
 
         print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
@@ -243,7 +249,7 @@ class QuaternionManipulator :
 
     def _generate_plots(self) :
 
-        nameMethod         = "VectorManipulator::_generate_plots"
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
 
         print(nameMethod + " : Enter")
