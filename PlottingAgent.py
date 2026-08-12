@@ -19,6 +19,9 @@ import colorsys
 
 import GlobalSettings
 
+import PlotHandleAgent_SubPlot_1
+import PlotHandleAgent_SubPlot_2
+
 
 show_plots = False
 
@@ -48,156 +51,6 @@ class PlottingAgent :
             self._plotting_agent = plotting_agent
 
 
-    class PlotHandleAgent_SubPlot_1 :
-
-        def __init__(self,
-
-            plotting_agent: PlottingAgent
-        ) :
-
-            self._plotting_agent = plotting_agent
-
-            # Title of sub-plot.
-
-            self._plot_handle_title_subplot                   = None
-
-            # The unit sphere.
-
-            self._plot_handle_surface                         = None
-
-            # Colormap and associated arrow.
-
-            self._plot_handle_colormap                        = None
-            self._plot_handle_colormap_arrow                  = None
-
-            # Vector and history of vector points.
-
-            self._plot_handle_quaternion_pre_multiply         = None
-            self._plot_handle_quaternion_pre_multiply_history = None
-
-
-        def set_plot_handle_title_subplot_1(self,
-
-                plot_handle_title
-        ) :
-
-            if self._plot_handle_title_subplot is not None :
-
-                raise Exception("Attribute _plot_handle_title_subplot_1 : Trying to set this attribute whilst it is already set.")
-
-            self.plot_handle_title_subplot_1 = plot_handle_title
-
-
-        def clear_plot_handle_title_subplot_1(self) :
-
-            if self._plot_handle_title_subplot_1 is not None:
-
-                self._plot_handle_title_subplot_1.remove()
-                self._plot_handle_title_subplot_1 = None
-
-
-        def clear_plot_handle_surface(self) :
-
-            if self._plot_handle_surface is not None:
-
-                self._plot_handle_surface.remove()
-                self._plot_handle_surface = None
-
-
-        def clear_plot_handle_colormap_arrow(self) :
-
-            if self._plot_handle_colormap_arrow is not None:
-
-                self._plot_handle_colormap_arrow.remove()
-                self._plot_handle_colormap_arrow = None
-
-
-        def clear_plot_handle_quaternion_pre_multiply(self) :
-
-            if self._plot_handle_quaternion_pre_multiply is not None:
-
-                self._plot_handle_quaternion_pre_multiply.remove()
-                self._plot_handle_quaternion_pre_multiply = None
-
-
-        def clear_artifacts(self) :
-
-            self.clear_plot_handle_quaternion_pre_multiply()
-            self.clear_plot_handle_surface()
-            self.clear_plot_handle_colormap_arrow()
-
-
-        def set_plot_handle_quaternion_pre_multiply(self) :
-
-            if self._plot_handle_quaternion_pre_multiply is not None:
-
-                raise Exception("Attribute _plot_handle_quaternion_pre_multiply : Trying to set this attribute whilst it is already set.")
-
-            self._plot_handle_quaternion_pre_multiply = self._plotting_agent.ax1.quiver(
-
-                0, 0, 0,
-                self._plotting_agent.quaternion_pre_multiply.x, self._plotting_agent.quaternion_pre_multiply.y, self._plotting_agent.quaternion_pre_multiply.z,
-                color='blue',
-                linewidth=1,
-                arrow_length_ratio=0.1
-            )
-
-
-    class PlotHandleAgent_SubPlot_2 :
-
-        """This class handles all the artifacts/artists that are required by the plots.
-
-        By placing all the artifacts/artists in this class, it allows the class to maintain
-        strict control over the artifacts/artists, i.e. control when and how they are created,
-        and under what conditions they are destroyed.
-
-        Attributes:
-            owner (str): The account owner's name.
-            balance (float): The current account balance.
-        """
-
-        def __init__(self,
-
-            plotting_agent : PlottingAgent
-        ) :
-
-            self._plotting_agent = plotting_agent
-
-            # The unit sphere.
-
-            self._plot_handle_surface                    = None
-
-            # Vectors and history of vector points.
-
-            self._plot_handle_axis_rotation              = None
-            self._plot_handle_to_rotate                  = None
-
-            # Vector and history of vector points.
-
-            self._plot_handle_quaternion_rotated         = None
-            self._plot_handle_quaternion_rotated_history = None
-
-
-        def set_plot_handle_title_subplot_2(self,
-
-                plot_handle_title
-        ) :
-
-            if self._plot_handle_title_subplot_2 is not None :
-
-                raise Exception("Attribute _plot_handle_title_subplot_2 : Trying to set this attribute whilst it is already set.")
-
-            self.plot_handle_title_subplot_2 = plot_handle_title
-
-
-        def clear_artifacts(self) :
-
-            if self._plot_handle_quaternion_rotated is not None:
-
-                self._plot_handle_quaternion_rotated.remove()
-                self._plot_handle_quaternion_rotated = None
-
-
     def __init__(
 
             self,
@@ -225,12 +78,9 @@ class PlottingAgent :
         self.quaternion_pre_multiply_min = None
         self.quaternion_pre_multiply_max = None
 
-        self.rgb_value_sphere_subplot_1  = None
-        self.rgb_value_sphere_subplot_2  = None
-
         self.plot_handle_agent           = PlottingAgent.PlotHandleAgent_Plot(self)
-        self._subPlot_1_handle_agent     = PlottingAgent.PlotHandleAgent_SubPlot_1(self)
-        self._subPlot_2_handle_agent     = PlottingAgent.PlotHandleAgent_SubPlot_2(self)
+        self._subPlot_1                  = PlotHandleAgent_SubPlot_1.PlotHandleAgent_SubPlot_1(self)
+        self._subPlot_2                  = PlotHandleAgent_SubPlot_2.PlotHandleAgent_SubPlot_2(self)
 
         # Component arrays to hold the history of the rotated vector.
 
@@ -466,7 +316,7 @@ class PlottingAgent :
 
     # Invoked by : _plot_quaternion_pre_multiply
 
-    def _plot_unit_sphere_quaternion_pre_multiply(self) :
+    def plot_unit_sphere_quaternion_pre_multiply(self) :
 
         nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
@@ -475,36 +325,7 @@ class PlottingAgent :
 
         print(nameMethod + " : Enter")
 
-        # ----------------------------
-        # Plot the unit sphere.
-        # ----------------------------
-
-        u = np.linspace(0, 2 * np.pi, 100)
-        v_sphere = np.linspace(0, np.pi, 100)
-
-        x = np.outer(np.cos(u), np.sin(v_sphere))
-        y = np.outer(np.sin(u), np.sin(v_sphere))
-        z = np.outer(np.ones_like(u), np.cos(v_sphere))
-
-        # If this sub-plot already contains a plot of a unit sphere, then delete it.
-
-        self._subPlot_1_handle_agent.clear_plot_handle_surface()
-
-        print(nameMethod + " : MARKER 2")
-
-        self.plot_handle_surface = axis.plot_surface(x, y, z,
-                                                     color=self.rgb_value_sphere_subplot_1,
-                                                     alpha=0.2,
-                                                     linewidth=0
-                                                    )
-
-        axis.plot_wireframe(
-            x, y, z,
-            color='black',
-            linewidth=0.4,
-            rstride=4,
-            cstride=4
-        )
+        self._subPlot_1.plot_unit_sphere(axis)
 
         print(nameMethod + " : Exit")
 
@@ -574,142 +395,13 @@ class PlottingAgent :
 
         nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
-        sub_plot = self.ax1
-
 
         print(nameMethod + " : Enter")
 
-        self._plot_unit_sphere_quaternion_pre_multiply()
+        self._subPlot_1.plot_quaternion_pre_multiply()
+        self._subPlot_2.plot_quaternion_pre_multiply()
 
-        print(nameMethod + " : MARKER 0")
-
-        self._subPlot_1_handle_agent.set_plot_handle_quaternion_pre_multiply()
-
-        # If w = 0, plot this quaternion in the pure imaginary space as well and keep this plot
-        # there. That is, do not remove it from the plot.
-
-        if abs(self.quaternion_pre_multiply.w) < 0.001 :
-
-            print(nameMethod + " : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-            print(nameMethod + " : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-            print(nameMethod + " : Plotting vector in the pure imaginary space")
-            print(nameMethod + " : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-            print(nameMethod + " : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-
-            # We do not need a handle to this artifact, as we are never going to remove it.
-
-            self.ax2.quiver(
-
-                0, 0, 0,
-                self.quaternion_pre_multiply.x, self.quaternion_pre_multiply.y, self.quaternion_pre_multiply.z,
-                color='blue',
-                linewidth=1,
-                arrow_length_ratio=0.1
-            )
-
-        if GlobalSettings.plot_quaternion_pre_multiply_history :
-
-            # Append the current point onto the end of the plot history.
-
-            hue_value = ((self.quaternion_pre_multiply.x) * 0.5) + 0.5
-
-            rgb_value = colorsys.hsv_to_rgb(
-
-                hue_value,  # hue (0–1)
-                1.0,  # saturation
-                1.0  # value
-            )
-
-            markersize_value = (hue_value * 4) + 2
-
-            if self.quaternion_pre_multiply.w < 0 :
-
-                marker_value = 'v'
-
-            else :
-
-                marker_value = '^'
-
-            sub_plot.plot(
-
-                self.quaternion_pre_multiply.x,
-                self.quaternion_pre_multiply.y,
-                self.quaternion_pre_multiply.z,
-                marker=marker_value,
-                markersize=markersize_value,
-                linestyle='-',
-                color=rgb_value
-            )
-
-
-    def _plot_quaternions(self) :
-
-        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
-
-        sub_plot = self.ax2
-
-
-        # Plot an arrow from the origin which represents : the axis of rotation
-
-        self.plot_handle_quaternion_axis_rotation = sub_plot.quiver(
-
-            0, 0, 0,
-            self.quaternion_axis_rotation.x, self.quaternion_axis_rotation.y, self.quaternion_axis_rotation.z,
-            color='red',
-            linewidth=1,
-            arrow_length_ratio=0.1
-        )
-
-        # Plot an arrow from the origin which represents : the vector/quaternion which is to be rotated.
-
-        self.plot_handle_quaternion_to_rotate = sub_plot.quiver(
-
-            0, 0, 0,
-            self.quaternion_to_rotate.x, self.quaternion_to_rotate.y, self.quaternion_to_rotate.z,
-            color='green',
-            linewidth=1,
-            arrow_length_ratio=0.1
-        )
-
-        # Plot an arrow from the origin which represents : the vector/quaternion after it has been rotated.
-
-        self.plot_handle_quaternion_rotated = sub_plot.quiver(
-
-            0, 0, 0,
-            self.quaternion_rotated.x, self.quaternion_rotated.y, self.quaternion_rotated.z,
-            color='magenta',
-            linewidth=1,
-            arrow_length_ratio=0.1
-        )
-
-        # Add the point to the list of points.
-
-        self.x_components.append(self.quaternion_rotated.x)
-        self.y_components.append(self.quaternion_rotated.y)
-        self.z_components.append(self.quaternion_rotated.z)
-
-        print(f"Length self.x_components = {len(self.x_components):d}")
-        print(f"Length self.y_components = {len(self.y_components):d}")
-        print(f"Length self.z_components = {len(self.z_components):d}")
-
-        print(nameMethod + " : self.x_components = ")
-        print(self.x_components)
-        print(nameMethod + " : self.y_components = ")
-        print(self.y_components)
-        print(nameMethod + " : self.z_components = ")
-        print(self.z_components)
-
-        if GlobalSettings.plot_quaternion_rotated_history :
-
-            sub_plot.plot(
-
-                self.quaternion_rotated.x,
-                self.quaternion_rotated.y,
-                self.quaternion_rotated.z,
-                marker='.',
-                linestyle='-',
-                color='magenta'
-            )
+        print(nameMethod + " : Exit")
 
 
     def _check_min_max_values(self) :
@@ -943,59 +635,6 @@ class PlottingAgent :
         print(nameMethod + " : Exit")
 
 
-    def _set_legend_subplot_1(self) :
-
-        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
-
-
-        print(nameMethod + " : Enter")
-
-        # Configure the individual elements which will comprise the legend.
-
-        legend_elements = [
-
-            # Line2D([0], [0], color='red',             lw=1, label=self.label_quaternion_axis_rotation),
-            # Line2D([0], [0], color='green',           lw=1, label=self.label_quaternion_to_rotate),
-            Line2D([0], [0], color='none',     lw=1,        label=self.label_quaternion_pre_multiply),
-            Line2D([0], [0], linestyle='None', marker=None, label=self.label_quaternion_pre_multiply_min),
-            Line2D([0], [0], linestyle='None', marker=None, label=self.label_quaternion_pre_multiply_max),
-            # Line2D([0], [0], color='magenta',         lw=1, label=self.label_quaternion_rotated),
-            Line2D([0], [0], linestyle='None', marker=None, label=self.label_angle_rotation)
-        ]
-
-        # Configure the legend itself and set the subplot to use it.
-
-        self.plot_handle_legend = self.ax1.legend(
-
-            handles=legend_elements,
-            prop={
-                "family": "Liberation Mono",
-                "size": 10
-            },
-            loc='lower center',
-            fontsize=10
-        )
-
-        hue_value = ((self.quaternion_pre_multiply.w) * 0.5) + 0.5
-
-        rgb_value_local = colorsys.hsv_to_rgb(
-
-            hue_value,  # hue (0–1)
-            1.0,  # saturation
-            1.0  # value
-        )
-
-        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        print(nameMethod + f" : About to set legend color to = <{hue_value:f}, 1.0, 1.0>")
-        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-
-        self.plot_handle_legend.get_texts()[2].set_color(rgb_value_local)
-
-        print(nameMethod + " : Exit")
-
-
     # Invoked by : PlottingAgent::_generate_subplot_1
 
     def _set_title_and_legend_subplot_1(self) :
@@ -1016,18 +655,13 @@ class PlottingAgent :
 
         # Set the title for subplot 1.
 
-        self._subPlot_1_handle_agent.set_plot_handle_title_subplot_1(GlobalSettings.title_sub_plot_1)
+        self._subPlot_1.set_title(GlobalSettings.title_sub_plot_1, GlobalSettings.raise_exception_if_already_set)
+
+        self._subPlot_1.set_legend()
 
         print(nameMethod + " : MARKER A")
 
         # Set the legend for subplot 1.
-
-        if (
-            (GlobalSettings.display_legend_subplot_1) and
-            (self.plot_handle_title_subplot_1 is None)
-        ) :
-
-            self._set_legend_subplot_1()
 
         print(nameMethod + " : Exit")
 
@@ -1190,74 +824,6 @@ class PlottingAgent :
         self.elevation_view = elevation_view
 
 
-    # Invoked by : _generate_subplots
-
-    def _generate_subplot_1(self) :
-
-        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
-
-
-        print(nameMethod + " : Enter")
-
-        #
-
-        self._plot_quaternion_pre_multiply()
-        # self.add_labels_to_plot(axis)
-
-        print(nameMethod + " : MARKER 0")
-
-        self._set_title_and_legend_subplot_1()
-
-        print(nameMethod + " : MARKER 1")
-
-        # Update the arrow that points to the colorbar.
-
-        current_value = self.quaternion_pre_multiply.w
-
-        print(nameMethod + " : MARKER 2")
-
-        self.plot_handle_colormap_arrow = self.plot_handle_colormap.ax.annotate(
-            "",
-            xy=(1.0, current_value),  # Arrow tip
-            xytext=(1.5, current_value),  # Arrow tail
-            xycoords=("axes fraction", "data"),
-            textcoords=("axes fraction", "data"),
-            arrowprops=dict(
-                arrowstyle="simple",
-                color="black",
-                lw=2
-            )
-        )
-
-        self.ax1.view_init(
-
-            elev=self.elevation_view,
-            azim=self.azimuth_view
-        )
-
-        print(nameMethod + " : Exit")
-
-
-    def _generate_subplot_2(self) :
-
-        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
-
-
-        print(nameMethod + " : Enter")
-
-        self._plot_quaternions()
-        # self.add_labels_to_plot(axis)
-        self._set_title_and_legend_subplot_2()
-
-        self.ax2.view_init(
-
-            elev=self.elevation_view,
-            azim=self.azimuth_view
-        )
-
-        print(nameMethod + " : Exit")
-
-
     def _save_plot_to_file(
 
             self,
@@ -1321,6 +887,7 @@ class PlottingAgent :
         #
         # Also, keep the history plot points as they just get added to.
 
+        self.subPlot_2_handle_agent.clear_artifacts()
         self.subPlot_1_handle_agent.clear_artifacts()
 
         print(nameMethod + " : Exit")
@@ -1348,8 +915,8 @@ class PlottingAgent :
 
         print(nameMethod + " : Enter")
 
-        self._subPlot_2_handle_agent.clear_artifacts()
-        self._subPlot_1_handle_agent.clear_artifacts()
+        self._subPlot_2.clear_artifacts()
+        self._subPlot_1.clear_artifacts()
 
         print(nameMethod + " : Exit")
 
@@ -1384,8 +951,8 @@ class PlottingAgent :
 
         # Generate the sub-plots for both self.ax1 and self.ax2.
 
-        self._generate_subplot_1()
-        self._generate_subplot_2()
+        self._subPlot_1.generate_plot(self.ax1)
+        self._subPlot_2.generate_plot(self.ax2)
 
 
     def _set_title_plot(self) :
@@ -1419,42 +986,7 @@ class PlottingAgent :
         print(nameMethod + " : Exit")
 
 
-    def _set_rgb_value_for_sphere_surface_subplot_1(self) :
-
-        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
-
-
-        print(nameMethod + " : Enter")
-
-        if self.quaternion_pre_multiply is None :
-
-            hue_value = 0.5
-
-        else :
-
-            hue_value = ((self.quaternion_pre_multiply.w) * 0.5) + 0.5
-
-        self.rgb_value_sphere_surface_subplot_1 = colorsys.hsv_to_rgb(
-
-            hue_value,  # hue (0–1)
-            1.0,  # saturation
-            1.0  # value
-        )
-
-        print(nameMethod + " : Exit")
-
-
-    def _set_rgb_value_for_sphere_surface_subplot_2(self):
-
-        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
-
-
-        print(nameMethod + " : Enter")
-
-        print(nameMethod + " : Exit")
-
-
-    # Invoked by :
+    # Invoked by : generate_plot
 
     def _set_rgb_values_for_sphere_surfaces(self) :
 
@@ -1463,11 +995,11 @@ class PlottingAgent :
 
         print(nameMethod + " : Enter")
 
-        self._set_rgb_value_for_sphere_surface_subplot_1()
-        self._set_rgb_value_for_sphere_surface_subplot_2()
+        self._subPlot_1.set_rgb_value_for_sphere_surface()
 
-        self.hue_value_sphere_subplot_1 = None
-        self.hue_value_sphere_subplot_2 = None
+        print(nameMethod + " : MARKER 1")
+
+        self._subPlot_2.set_rgb_value_for_sphere_surface()
 
         print(nameMethod + " : Exit")
 
@@ -1503,8 +1035,6 @@ class PlottingAgent :
         self._plot_result_display_diagnostics()
 
         # Plot handles may be created by the following methods.
-        #
-        #
 
         self._set_title_plot()
         self._set_rgb_values_for_sphere_surfaces()

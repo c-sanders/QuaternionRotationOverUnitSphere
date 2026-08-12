@@ -19,4 +19,6 @@ display_legend           = True
 display_legend_subplot_1 = False
 display_legend_subplot_2 = False
 
+raise_exception_if_already_set = True
+
 title_colormap = "Value of w for the 4d hyperspheres"
