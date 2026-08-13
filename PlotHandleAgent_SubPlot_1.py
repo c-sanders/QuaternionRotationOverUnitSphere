@@ -1,9 +1,30 @@
 import sys
 import colorsys
 
+from   matplotlib.colors import LinearSegmentedColormap
+from   matplotlib.colors import Normalize
+from   matplotlib.cm     import ScalarMappable
+
+import GlobalSettings
+
+
+my_colormap = LinearSegmentedColormap.from_list(
+    "my_rainbow",
+    [
+        "red",
+        "orange",
+        "yellow",
+        "green",
+        "blue",
+        "indigo",
+        "violet"
+    ]
+)
+
 
 class PlotHandleAgent_SubPlot_1 :
 
+    # Only create an instance of this class once an instance of the PlottingAgent class has been fully configures.
 
     def __init__(self,
 
@@ -20,6 +41,8 @@ class PlotHandleAgent_SubPlot_1 :
         #   - colormap and its associated arrow
         #   - vector and history of vector points
 
+        self.axis                                         = None
+
         self._plot_handle_title_subplot                   = None
 
         self._rgb_value_sphere                            = None
@@ -30,6 +53,41 @@ class PlotHandleAgent_SubPlot_1 :
 
         self._plot_handle_quaternion_pre_multiply         = None
         self._plot_handle_quaternion_pre_multiply_history = None
+
+        self._initialise_plot()
+
+
+    def _initialise_plot(self) :
+
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
+
+
+        print(nameMethod + " : Enter")
+
+        print(nameMethod + " : Exit")
+
+
+    def configure(self) :
+
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
+
+
+        print(nameMethod + " : Enter")
+
+        self.axis = self._plotting_agent.ax1
+
+        self._add_colormap()
+        # self._plot_unit_sphere_quaternion_pre_multiply()
+        self._plot_axes(self.axis)
+
+        print(nameMethod + " : About to invoke : self.set_aspect_ratios_and_extents")
+        self._set_aspect_ratios_and_extents(self.axis)
+
+        self._fill_panes(self.axis)
+        self._configure_grid(self.axis)
+        # self.create_static_labels()
+
+        print(nameMethod + " : Exit")
 
 
     def set_title(self,
@@ -48,12 +106,106 @@ class PlotHandleAgent_SubPlot_1 :
         self.plot_handle_title_subplot_1 = plot_handle_title
 
 
-    def clear_plot_handle_title_subplot_1(self) :
+    def clear_plot_title(self) :
 
         if self._plot_handle_title_subplot_1 is not None :
 
             self._plot_handle_title_subplot_1.remove()
             self._plot_handle_title_subplot_1 = None
+
+
+    # Invoked by : configure
+
+    def _set_aspect_ratios_and_extents(self) :
+
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
+
+
+        print(nameMethod + " : Enter")
+
+        # ----------------------------
+        # Set equal aspect ratio
+        # ----------------------------
+
+        max_extent = max(
+            np.max(np.abs(self.v)),
+            1.0
+        )
+
+        axis.set_xlim([-max_extent, max_extent])
+        axis.set_ylim([-max_extent, max_extent])
+        axis.set_zlim([-max_extent, max_extent])
+
+        axis.set_box_aspect([1, 1, 1])
+
+        print(nameMethod + " : Exit")
+
+
+    # Invoked by : _initialise_subplot_1
+
+    def _plot_axes(
+
+            self,
+            axis
+    ) :
+
+        # Plot;
+        #
+        #   x axis
+        #   y axis
+        #   z axis
+
+        axis.quiver(
+            -1.2, 0, 0,
+            2.4, 0, 0,
+            color='black',
+            linewidth=1,
+            arrow_length_ratio=0.025
+        )
+
+        axis.quiver(
+            0, -1.2, 0,
+            0, 2.4, 0,
+            color='black',
+            linewidth=1,
+            arrow_length_ratio=0.025
+        )
+
+        axis.quiver(
+            0, 0, -1.2,
+            0, 0, 2.4,
+            color='black',
+            linewidth=1,
+            arrow_length_ratio=0.025
+        )
+
+
+    # Invoked by : configure
+
+    def _add_colormap(self) :
+
+        nameMethod  = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
+
+
+        # Place a color scale on the right hand side of this sub-plot.
+
+        norm = Normalize(vmin=-1.0, vmax=1.0)
+
+        sm = ScalarMappable(
+            norm=norm,
+            cmap=my_colormap
+        )
+        sm.set_array([])
+
+        self._plot_handle_colormap = self._plotting_agent.fig.colorbar(
+            sm,
+            ax=self.axis,
+            location="left",
+            pad=0.05,
+            shrink=0.75
+        )
+
+        self._plot_handle_colormap.set_label(GlobalSettings.title_colormap)
 
 
     # Invoked by : PlottingAgent::_plot_unit_sphere_quaternion_pre_multiply
@@ -158,37 +310,25 @@ class PlotHandleAgent_SubPlot_1 :
         print(nameMethod + " : Exit")
 
 
-    def generate_plot(self,
+    # Invoked by : generate_plot
 
-            axis
-    ) :
+    def _update_colorbar(self) :
 
         nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
 
         print(nameMethod + " : Enter")
 
-        #
-
-        self._plot_quaternion_pre_multiply()
-        # self.add_labels_to_plot(axis)
-
-        print(nameMethod + " : MARKER 0")
-
-        self._set_title_and_legend_subplot_1()
-
-        print(nameMethod + " : MARKER 1")
-
         # If an arrow currently points to the colorbar, then remove it.
         # Then place a new updated arrow next to the colorbar.
 
         self.clear_plot_handle_colormap_arrow()
 
-        current_value = self.quaternion_pre_multiply.w
+        current_value = self._plotting_agent.quaternion_pre_multiply.w
 
         print(nameMethod + " : MARKER 2")
 
-        self.plot_handle_colormap_arrow = self.plot_handle_colormap.ax.annotate(
+        self.plot_handle_colormap_arrow = self._plot_handle_colormap.ax.annotate(
             "",
             xy=(1.0, current_value),  # Arrow tip
             xytext=(1.5, current_value),  # Arrow tail
@@ -201,6 +341,31 @@ class PlotHandleAgent_SubPlot_1 :
             )
         )
 
+        print(nameMethod + " : Exit")
+
+
+    def generate_plot(self,
+
+            axis
+    ) :
+
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
+
+
+        print(nameMethod + " : Enter")
+
+        #
+
+        self.set_title(GlobalSettings.display_legend_subplot_1, GlobalSettings.raise_exception_if_already_set)
+        print(nameMethod + " : MARKER 0")
+        self.set_legend(False)
+        print(nameMethod + " : MARKER 1")
+
+        self._update_colorbar()
+
+        self._plot_quaternion_pre_multiply()
+        # self.add_labels_to_plot(axis)
+
         axis.view_init(
 
             elev=self._plotting_agent.elevation_view,
@@ -212,7 +377,7 @@ class PlotHandleAgent_SubPlot_1 :
 
     # Invoked by : _generate_subplot_1
 
-    def plot_quaternion_pre_multiply(self) :
+    def _plot_quaternion_pre_multiply(self) :
 
         nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 

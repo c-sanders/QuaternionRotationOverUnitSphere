@@ -5,9 +5,6 @@ matplotlib.use("QtAgg")
 import matplotlib.pyplot as plt
 from   matplotlib.lines  import Line2D
 from   matplotlib.ticker import MultipleLocator
-from   matplotlib.colors import LinearSegmentedColormap
-from   matplotlib.cm     import ScalarMappable
-from   matplotlib.colors import Normalize
 import json
 
 # Import the Python Image Library, aka PIL.
@@ -24,19 +21,6 @@ import PlotHandleAgent_SubPlot_2
 
 
 show_plots = False
-
-my_colormap = LinearSegmentedColormap.from_list(
-    "my_rainbow",
-    [
-        "red",
-        "orange",
-        "yellow",
-        "green",
-        "blue",
-        "indigo",
-        "violet"
-    ]
-)
 
 
 class PlottingAgent :
@@ -60,6 +44,8 @@ class PlottingAgent :
         nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
 
+        print(nameMethod + " : Enter")
+
         self.fig                         = None
         self.ax1                         = None
         self.ax2                         = None
@@ -77,10 +63,6 @@ class PlottingAgent :
 
         self.quaternion_pre_multiply_min = None
         self.quaternion_pre_multiply_max = None
-
-        self.plot_handle_agent           = PlottingAgent.PlotHandleAgent_Plot(self)
-        self._subPlot_1                  = PlotHandleAgent_SubPlot_1.PlotHandleAgent_SubPlot_1(self)
-        self._subPlot_2                  = PlotHandleAgent_SubPlot_2.PlotHandleAgent_SubPlot_2(self)
 
         # Component arrays to hold the history of the rotated vector.
 
@@ -104,6 +86,22 @@ class PlottingAgent :
 
         self._initialise_plot()
 
+        # We can create the sub-plots now that the main plot has been fully initialised.
+
+        # self.plot_handle_agent           = PlottingAgent.PlotHandleAgent_Plot(self)
+        self._subPlot_1                  = PlotHandleAgent_SubPlot_1.PlotHandleAgent_SubPlot_1(self)
+        self._subPlot_2                  = PlotHandleAgent_SubPlot_2.PlotHandleAgent_SubPlot_2(self)
+
+        self._initialise_subplots()
+
+        print(nameMethod + " : %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+        print(nameMethod + " : %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+        print(nameMethod + " : Exit")
+        print(nameMethod + " : %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+        print(nameMethod + " : %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+
+
+    # Invoked by : __init__
 
     def _initialise_plot(self) :
 
@@ -114,69 +112,45 @@ class PlottingAgent :
 
         self._create_figure_and_axes()
 
+        print(nameMethod + " : Exit")
+
+
+    def _initialise_subplots(self) :
+
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
+
+
+        print(nameMethod + " : Enter")
+
         self._initialise_subplot_1()
         self._initialise_subplot_2()
 
         print(nameMethod + " : Exit")
 
-
-    def _add_colormap(self) :
-
-        nameMethod  = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
-
-
-        # Place a color scale on the right hand side of this sub-plot.
-
-        norm = Normalize(vmin=-1.0, vmax=1.0)
-
-        sm = ScalarMappable(
-            norm=norm,
-            cmap=my_colormap
-        )
-        sm.set_array([])
-
-        self.plot_handle_colormap = self.fig.colorbar(
-            sm,
-            ax=self.ax1,
-            location="left",
-            pad=0.05,
-            shrink=0.75
-        )
-
-        self.plot_handle_colormap.set_label(GlobalSettings.title_colormap)
-
+    # Invoked by : _initialise_plot
 
     def _initialise_subplot_1(self) :
 
         nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
-        axis = self.ax1
-
 
         print(nameMethod + " : Enter")
 
-        # self._plot_unit_sphere_quaternion_pre_multiply()
-        self._plot_axes(axis)
-
-        print(nameMethod + " : About to invoke : self.set_aspect_ratios_and_extents")
-        self._set_aspect_ratios_and_extents(axis)
-
-        self._fill_panes(axis)
-        self._configure_grid(axis)
-        # self.create_static_labels()
-        self._add_colormap()
+        self._subPlot_1.configure()
 
         print(nameMethod + " : Exit")
 
+
+    # Invoked by : _initialise_plot
 
     def _initialise_subplot_2(self) :
 
         nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
-        axis = self.ax2
-
 
         print(nameMethod + " : Enter")
+
+        self._subPlot_2.configure()
 
         self._plot_unit_sphere_quaternion_rotation()
         self._plot_axes(axis)
@@ -272,45 +246,6 @@ class PlottingAgent :
             2, 1,
             figsize=(8, 10),
             subplot_kw={'projection': '3d'}
-        )
-
-
-    # Invoked by : _initialise_subplot_1
-
-    def _plot_axes(
-
-            self,
-            axis
-    ) :
-
-        # Plot;
-        #
-        #   x axis
-        #   y axis
-        #   z axis
-
-        axis.quiver(
-            -1.2, 0, 0,
-            2.4, 0, 0,
-            color='black',
-            linewidth=1,
-            arrow_length_ratio=0.025
-        )
-
-        axis.quiver(
-            0, -1.2, 0,
-            0, 2.4, 0,
-            color='black',
-            linewidth=1,
-            arrow_length_ratio=0.025
-        )
-
-        axis.quiver(
-            0, 0, -1.2,
-            0, 0, 2.4,
-            color='black',
-            linewidth=1,
-            arrow_length_ratio=0.025
         )
 
 
@@ -604,35 +539,6 @@ class PlottingAgent :
             print("Rotation angle = " + str(metadata["rotation"]["angle"]))
             print("Rotation axis  = " + str(metadata["rotation"]["axis"]["scalar"]))
             print("========================================")
-
-
-    def _set_aspect_ratios_and_extents(
-
-            self,
-            axis
-    ) :
-
-        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
-
-
-        print(nameMethod + " : Enter")
-
-        # ----------------------------
-        # Set equal aspect ratio
-        # ----------------------------
-
-        max_extent = max(
-            np.max(np.abs(self.v)),
-            1.0
-        )
-
-        axis.set_xlim([-max_extent, max_extent])
-        axis.set_ylim([-max_extent, max_extent])
-        axis.set_zlim([-max_extent, max_extent])
-
-        axis.set_box_aspect([1, 1, 1])
-
-        print(nameMethod + " : Exit")
 
 
     # Invoked by : PlottingAgent::_generate_subplot_1
@@ -949,10 +855,17 @@ class PlottingAgent :
 
     def _generate_subplots(self) :
 
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
+
+
+        print(nameMethod + " : Enter")
+
         # Generate the sub-plots for both self.ax1 and self.ax2.
 
         self._subPlot_1.generate_plot(self.ax1)
         self._subPlot_2.generate_plot(self.ax2)
+
+        print(nameMethod + " : Exit")
 
 
     def _set_title_plot(self) :
@@ -1030,7 +943,11 @@ class PlottingAgent :
         nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
 
+        print(nameMethod + " : ::::::::::::::::::::::::::::::::::::::::")
+        print(nameMethod + " : ::::::::::::::::::::::::::::::::::::::::")
         print(nameMethod + " : Enter")
+        print(nameMethod + " : ::::::::::::::::::::::::::::::::::::::::")
+        print(nameMethod + " : ::::::::::::::::::::::::::::::::::::::::")
 
         self._plot_result_display_diagnostics()
 

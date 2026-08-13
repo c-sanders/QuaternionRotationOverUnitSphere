@@ -181,6 +181,8 @@ class QuaternionManipulator :
         self._rotateVectorUsingQuaternion()
 
 
+    # Invoked by : _generate_plots
+
     def _update_plotting_agent(self) :
 
         nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
@@ -205,17 +207,6 @@ class QuaternionManipulator :
             self.azimuth_view,
             self.elevation_view
         )
-
-
-    def _generate_plot(
-
-            self,
-            filename
-    ) :
-
-        # Instruct the plotting agent to plot the data which was just passed to it.
-
-        self.plottingAgent.generate_plot(filename)
 
 
     def _update_loop_parameters(self) :
@@ -260,10 +251,13 @@ class QuaternionManipulator :
 
             filename = f"rotation-{self.counter_loop:04d}.png"
 
-            self._perform_quaternion_operations()
+            # - Perform the next set of quaternion rotations.
+            # - Update the Plotting agent with the newly generated results.
+            # - Instruct the Plotting agent to generate the new plot.
 
+            self._perform_quaternion_operations()
             self._update_plotting_agent()
-            self._generate_plot(filename)
+            self.plottingAgent.generate_plot(filename)
 
             self._update_loop_parameters()
 
