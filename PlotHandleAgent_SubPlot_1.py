@@ -1,11 +1,16 @@
 import sys
 import colorsys
 
+import numpy as np
+
+import matplotlib.pyplot as plt
+from   matplotlib.lines  import Line2D
 from   matplotlib.colors import LinearSegmentedColormap
 from   matplotlib.colors import Normalize
 from   matplotlib.cm     import ScalarMappable
 
 import GlobalSettings
+import SubPlotAgent
 
 
 my_colormap = LinearSegmentedColormap.from_list(
@@ -22,7 +27,7 @@ my_colormap = LinearSegmentedColormap.from_list(
 )
 
 
-class PlotHandleAgent_SubPlot_1 :
+class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
     # Only create an instance of this class once an instance of the PlottingAgent class has been fully configures.
 
@@ -31,28 +36,21 @@ class PlotHandleAgent_SubPlot_1 :
         plotting_agent: PlottingAgent
     ) :
 
-        self._plotting_agent = plotting_agent
+        super().__init__(plotting_agent)
 
         # Set the following attributes;
         #
-        #   - title of sub-plot
-        #   - RGB color code for surface of unit sphere
-        #   - unit sphere
         #   - colormap and its associated arrow
         #   - vector and history of vector points
-
-        self.axis                                         = None
-
-        self._plot_handle_title_subplot                   = None
-
-        self._rgb_value_sphere                            = None
-        self._plot_handle_surface                         = None
 
         self._plot_handle_colormap                        = None
         self._plot_handle_colormap_arrow                  = None
 
         self._plot_handle_quaternion_pre_multiply         = None
         self._plot_handle_quaternion_pre_multiply_history = None
+
+        self.rgb_value_min                                = colorsys.hsv_to_rgb(0, 0, 1.0)
+        self.rgb_value_max                                = colorsys.hsv_to_rgb(0, 0, 1.0)
 
         self._initialise_plot()
 
@@ -74,17 +72,17 @@ class PlotHandleAgent_SubPlot_1 :
 
         print(nameMethod + " : Enter")
 
-        self.axis = self._plotting_agent.ax1
+        self._axis = self._plotting_agent.ax1
 
         self._add_colormap()
         # self._plot_unit_sphere_quaternion_pre_multiply()
-        self._plot_axes(self.axis)
+        self._plot_axes()
 
         print(nameMethod + " : About to invoke : self.set_aspect_ratios_and_extents")
-        self._set_aspect_ratios_and_extents(self.axis)
+        self._set_aspect_ratios_and_extents()
 
-        self._fill_panes(self.axis)
-        self._configure_grid(self.axis)
+        self._fill_panes()
+        self._configure_grid()
         # self.create_static_labels()
 
         print(nameMethod + " : Exit")
@@ -128,56 +126,17 @@ class PlotHandleAgent_SubPlot_1 :
         # ----------------------------
 
         max_extent = max(
-            np.max(np.abs(self.v)),
+            np.max(np.abs(self._v)),
             1.0
         )
 
-        axis.set_xlim([-max_extent, max_extent])
-        axis.set_ylim([-max_extent, max_extent])
-        axis.set_zlim([-max_extent, max_extent])
+        self._axis.set_xlim([-max_extent, max_extent])
+        self._axis.set_ylim([-max_extent, max_extent])
+        self._axis.set_zlim([-max_extent, max_extent])
 
-        axis.set_box_aspect([1, 1, 1])
+        self._axis.set_box_aspect([1, 1, 1])
 
         print(nameMethod + " : Exit")
-
-
-    # Invoked by : _initialise_subplot_1
-
-    def _plot_axes(
-
-            self,
-            axis
-    ) :
-
-        # Plot;
-        #
-        #   x axis
-        #   y axis
-        #   z axis
-
-        axis.quiver(
-            -1.2, 0, 0,
-            2.4, 0, 0,
-            color='black',
-            linewidth=1,
-            arrow_length_ratio=0.025
-        )
-
-        axis.quiver(
-            0, -1.2, 0,
-            0, 2.4, 0,
-            color='black',
-            linewidth=1,
-            arrow_length_ratio=0.025
-        )
-
-        axis.quiver(
-            0, 0, -1.2,
-            0, 0, 2.4,
-            color='black',
-            linewidth=1,
-            arrow_length_ratio=0.025
-        )
 
 
     # Invoked by : configure
@@ -199,7 +158,7 @@ class PlotHandleAgent_SubPlot_1 :
 
         self._plot_handle_colormap = self._plotting_agent.fig.colorbar(
             sm,
-            ax=self.axis,
+            ax=self._axis,
             location="left",
             pad=0.05,
             shrink=0.75
@@ -266,10 +225,7 @@ class PlotHandleAgent_SubPlot_1 :
         print(nameMethod + " : Exit")
 
 
-    def plot_unit_sphere(self,
-
-            axis
-    ) :
+    def plot_unit_sphere(self) :
 
         nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
@@ -293,13 +249,13 @@ class PlotHandleAgent_SubPlot_1 :
 
         print(nameMethod + " : MARKER 2")
 
-        self.plot_handle_surface = axis.plot_surface(x, y, z,
+        self.plot_handle_surface = self._axis.plot_surface(x, y, z,
                                                      color=self.rgb_value_sphere_subplot_1,
                                                      alpha=0.2,
                                                      linewidth=0
                                                     )
 
-        axis.plot_wireframe(
+        self._axis.plot_wireframe(
             x, y, z,
             color='black',
             linewidth=0.4,
@@ -344,10 +300,7 @@ class PlotHandleAgent_SubPlot_1 :
         print(nameMethod + " : Exit")
 
 
-    def generate_plot(self,
-
-            axis
-    ) :
+    def generate_plot(self) :
 
         nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
@@ -358,7 +311,7 @@ class PlotHandleAgent_SubPlot_1 :
 
         self.set_title(GlobalSettings.display_legend_subplot_1, GlobalSettings.raise_exception_if_already_set)
         print(nameMethod + " : MARKER 0")
-        self.set_legend(False)
+        self._set_legend(False)
         print(nameMethod + " : MARKER 1")
 
         self._update_colorbar()
@@ -366,7 +319,7 @@ class PlotHandleAgent_SubPlot_1 :
         self._plot_quaternion_pre_multiply()
         # self.add_labels_to_plot(axis)
 
-        axis.view_init(
+        self._axis.view_init(
 
             elev=self._plotting_agent.elevation_view,
             azim=self._plotting_agent.azimuth_view
@@ -390,7 +343,7 @@ class PlotHandleAgent_SubPlot_1 :
 
             raise Exception("Attribute _plot_handle_quaternion_pre_multiply : Trying to set this attribute whilst it is already set.")
 
-        self._plot_handle_quaternion_pre_multiply = self._plotting_agent.ax1.quiver(
+        self._plot_handle_quaternion_pre_multiply = self._axis.quiver(
 
             0, 0, 0,
             self._plotting_agent.quaternion_pre_multiply.x, self._plotting_agent.quaternion_pre_multiply.y,
@@ -404,7 +357,7 @@ class PlotHandleAgent_SubPlot_1 :
 
             # Append the current point onto the end of the plot history.
 
-            hue_value = ((self.quaternion_pre_multiply.x) * 0.5) + 0.5
+            hue_value = ((self._plotting_agent.quaternion_pre_multiply.x) * 0.5) + 0.5
 
             rgb_value = colorsys.hsv_to_rgb(
 
@@ -415,7 +368,7 @@ class PlotHandleAgent_SubPlot_1 :
 
             markersize_value = (hue_value * 4) + 2
 
-            if self.quaternion_pre_multiply.w < 0 :
+            if self._plotting_agent.quaternion_pre_multiply.w < 0 :
 
                 marker_value = 'v'
 
@@ -425,9 +378,9 @@ class PlotHandleAgent_SubPlot_1 :
 
             sub_plot.plot(
 
-                self.quaternion_pre_multiply.x,
-                self.quaternion_pre_multiply.y,
-                self.quaternion_pre_multiply.z,
+                self._plotting_agent.quaternion_pre_multiply.x,
+                self._plotting_agent.quaternion_pre_multiply.y,
+                self._plotting_agent.quaternion_pre_multiply.z,
                 marker=marker_value,
                 markersize=markersize_value,
                 linestyle='-',
@@ -437,7 +390,7 @@ class PlotHandleAgent_SubPlot_1 :
         print(nameMethod + " : Exit")
 
 
-    def set_legend(self,
+    def _set_legend(self,
 
         raise_if_set
     ) :

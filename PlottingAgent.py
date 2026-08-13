@@ -46,43 +46,24 @@ class PlottingAgent :
 
         print(nameMethod + " : Enter")
 
-        self.fig                         = None
-        self.ax1                         = None
-        self.ax2                         = None
+        self._fig                         = None
+        self._ax1                         = None
+        self._ax2                         = None
 
-        self.title_plots                 = title_plots
+        self._title_plots                 = title_plots
 
-        self.v                           = np.array([1.2, 0.8, 0.5])
+        self._angle_rotation              = None
 
-        self.angle_rotation              = None
+        self._quaternion_axis_rotation   = None
+        self._quaternion_to_rotate       = None
+        self._quaternion_pre_multiply    = None
+        self._quaternion_rotated         = None
 
-        self.quaternion_axis_rotation    = None
-        self.quaternion_to_rotate        = None
-        self.quaternion_pre_multiply     = None
-        self.quaternion_rotated          = None
+        self._quaternion_pre_multiply_min = None
+        self._quaternion_pre_multiply_max = None
 
-        self.quaternion_pre_multiply_min = None
-        self.quaternion_pre_multiply_max = None
-
-        # Component arrays to hold the history of the rotated vector.
-
-        self.x_components                = []
-        self.y_components                = []
-        self.z_components                = []
-
-        self.azimuth_view                = None
-        self.elevation_view              = None
-
-        self.rgb_value_min               = colorsys.hsv_to_rgb(0, 0, 1.0)
-        self.rgb_value_max               = colorsys.hsv_to_rgb(0, 0, 1.0)
-
-        self.label_quaternion_axis_rotation    = ""
-        self.label_quaternion_to_rotate        = ""
-        self.label_quaternion_pre_multiply     = ""
-        self.label_quaternion_pre_multiply_min = ""
-        self.label_quaternion_pre_multiply_max = ""
-        self.label_quaternion_rotated          = ""
-        self.label_angle_rotation              = ""
+        self._azimuth_view                = None
+        self._elevation_view              = None
 
         self._initialise_plot()
 
@@ -152,16 +133,6 @@ class PlottingAgent :
 
         self._subPlot_2.configure()
 
-        self._plot_unit_sphere_quaternion_rotation()
-        self._plot_axes(axis)
-
-        print(nameMethod + " : About to invoke : self.set_aspect_ratios_and_extents")
-        self._set_aspect_ratios_and_extents(axis)
-
-        self._fill_panes(axis)
-        self._configure_grid(axis)
-        # self.create_static_labels()
-
         print(nameMethod + " : Exit")
 
 
@@ -183,10 +154,10 @@ class PlottingAgent :
         quaternion_rotated
     ) :
 
-        self.quaternion_axis_rotation = quaternion_axis_rotation
-        self.quaternion_to_rotate     = quaternion_to_rotate
-        self.quaternion_pre_multiply  = quaternion_pre_multiply
-        self.quaternion_rotated       = quaternion_rotated
+        self._quaternion_axis_rotation = quaternion_axis_rotation
+        self._quaternion_to_rotate     = quaternion_to_rotate
+        self._quaternion_pre_multiply  = quaternion_pre_multiply
+        self._quaternion_rotated       = quaternion_rotated
 
 
     def _format_component(
@@ -265,65 +236,6 @@ class PlottingAgent :
         print(nameMethod + " : Exit")
 
 
-    def _plot_unit_sphere_quaternion_rotation(self) :
-
-        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
-
-        axis = self.ax2
-
-
-        # ----------------------------
-        # Plot the unit sphere.
-        # ----------------------------
-
-        u = np.linspace(0, 2 * np.pi, 100)
-        v_sphere = np.linspace(0, np.pi, 100)
-
-        x = np.outer(np.cos(u), np.sin(v_sphere))
-        y = np.outer(np.sin(u), np.sin(v_sphere))
-        z = np.outer(np.ones_like(u), np.cos(v_sphere))
-
-        # ax.plot_surface(
-        #     x, y, z,
-        #     alpha=0.25,
-        #     linewidth=0,
-        #     antialiased=True
-        # )
-
-        # ax.plot_wireframe(
-        #     x, y, z,
-        #     color='gray',
-        #     linewidth=0.5,
-        #     alpha=0.5,
-        #     rstride=5,
-        #     cstride=5
-        # )
-
-        hue_value = 0.5
-
-        rgb_value = colorsys.hsv_to_rgb(
-
-            hue_value,  # hue (0–1)
-            1.0,  # saturation
-            1.0  # value
-        )
-
-        axis.plot_surface(
-            x, y, z,
-            color=rgb_value,
-            alpha=0.2,
-            linewidth=0
-        )
-
-        axis.plot_wireframe(
-            x, y, z,
-            color='black',
-            linewidth=0.4,
-            rstride=4,
-            cstride=4
-        )
-
-
     # Invoked by : _generate_subplot_1
 
     def _plot_quaternion_pre_multiply(self) :
@@ -342,13 +254,13 @@ class PlottingAgent :
     def _check_min_max_values(self) :
 
         if (
-            (self.quaternion_pre_multiply_max is None) or
-            (self.quaternion_pre_multiply.w > self.quaternion_pre_multiply_max)
+            (self._quaternion_pre_multiply_max is None) or
+            (self._quaternion_pre_multiply.w > self._quaternion_pre_multiply_max)
            ) :
 
-            self.quaternion_pre_multiply_max = self.quaternion_pre_multiply.w
+            self._quaternion_pre_multiply_max = self._quaternion_pre_multiply.w
 
-            hue_value = ((self.quaternion_pre_multiply.w) * 0.5) + 0.5
+            hue_value = ((self._quaternion_pre_multiply.w) * 0.5) + 0.5
 
             self.rgb_value_max = colorsys.hsv_to_rgb(
 
@@ -359,9 +271,9 @@ class PlottingAgent :
 
         # Check if the scalar component of qv has reached a new minimum.
 
-        if self.quaternion_pre_multiply_min is None :
+        if self._quaternion_pre_multiply_min is None :
 
-            self.quaternion_pre_multiply_min = self.quaternion_pre_multiply.w
+            self._quaternion_pre_multiply_min = self._quaternion_pre_multiply.w
 
         else :
 
@@ -651,30 +563,6 @@ class PlottingAgent :
         print(nameMethod + " : Exit")
 
 
-    def _fill_panes(
-
-            self,
-            axis
-    ) :
-
-        axis.xaxis.pane.fill = False
-        axis.yaxis.pane.fill = False
-        axis.zaxis.pane.fill = False
-
-
-    def _configure_grid(
-
-            self,
-            axis
-    ) :
-
-        # ax.grid(False)
-
-        axis.xaxis.set_major_locator(MultipleLocator(1))
-        axis.yaxis.set_major_locator(MultipleLocator(1))
-        axis.zaxis.set_major_locator(MultipleLocator(1))
-
-
     def _add_metadata_to_file(
 
             self,
@@ -862,8 +750,8 @@ class PlottingAgent :
 
         # Generate the sub-plots for both self.ax1 and self.ax2.
 
-        self._subPlot_1.generate_plot(self.ax1)
-        self._subPlot_2.generate_plot(self.ax2)
+        self._subPlot_1.generate_plot()
+        self._subPlot_2.generate_plot()
 
         print(nameMethod + " : Exit")
 

@@ -2,7 +2,6 @@ import sys
 import math
 from   matplotlib        import font_manager
 import subprocess
-import numpy             as np
 
 # Import the Numerical Python package, aka numpy.
 
@@ -251,8 +250,8 @@ class QuaternionManipulator :
 
             filename = f"rotation-{self.counter_loop:04d}.png"
 
-            # - Perform the next set of quaternion rotations.
-            # - Update the Plotting agent with the newly generated results.
+            # - Perform the next quaternion rotation.
+            # - Update the Plotting agent with the results of this quaternion rotation.
             # - Instruct the Plotting agent to generate the new plot.
 
             self._perform_quaternion_operations()
