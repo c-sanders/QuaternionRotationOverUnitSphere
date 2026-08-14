@@ -57,12 +57,6 @@ class PlotHandleAgent_SubPlot_2(SubPlotAgent.SubPlotAgent) :
         self._plot_handle_quaternion_rotated         = None
         self._plot_handle_quaternion_rotated_history = None
 
-        # Component arrays to hold the history of the rotated vector.
-
-        self.x_components                = []
-        self.y_components                = []
-        self.z_components                = []
-
 
     def set_plot_handle_title_subplot_2(self,
 
@@ -84,20 +78,14 @@ class PlotHandleAgent_SubPlot_2(SubPlotAgent.SubPlotAgent) :
             self._plot_handle_quaternion_rotated = None
 
 
-    def set_rgb_value_for_sphere_surface(self) :
+    def _set_rgb_value_for_sphere_surface(self) :
 
         nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
 
         print(nameMethod + " : Enter")
 
-        if self._plotting_agent.quaternion_pre_multiply is None :
-
-            hue_value = 0.5
-
-        else :
-
-            hue_value = ((self._plotting_agent.quaternion_pre_multiply.w) * 0.5) + 0.5
+        hue_value = 0.5
 
         self._rgb_value_sphere = colorsys.hsv_to_rgb(
 
@@ -123,8 +111,8 @@ class PlotHandleAgent_SubPlot_2(SubPlotAgent.SubPlotAgent) :
 
         self._axis.view_init(
 
-            elev=self.elevation_view,
-            azim=self.azimuth_view
+            elev=self._plotting_agent._elevation_view,
+            azim=self._plotting_agent._azimuth_view
         )
 
         print(nameMethod + " : Exit")
@@ -269,12 +257,14 @@ class PlotHandleAgent_SubPlot_2(SubPlotAgent.SubPlotAgent) :
         nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
 
+        print(nameMethod + " : Enter")
+
         # Plot an arrow from the origin which represents : the axis of rotation
 
         self.plot_handle_quaternion_axis_rotation = self._axis.quiver(
 
             0, 0, 0,
-            self._plotting_agent.quaternion_axis_rotation.x, self._plotting_agent.quaternion_axis_rotation.y, self._plotting_agent.quaternion_axis_rotation.z,
+            self._plotting_agent._quaternion_axis_rotation.x, self._plotting_agent._quaternion_axis_rotation.y, self._plotting_agent._quaternion_axis_rotation.z,
             color='red',
             linewidth=1,
             arrow_length_ratio=0.1
@@ -285,7 +275,7 @@ class PlotHandleAgent_SubPlot_2(SubPlotAgent.SubPlotAgent) :
         self.plot_handle_quaternion_to_rotate = self._axis.quiver(
 
             0, 0, 0,
-            self._plotting_agent.quaternion_to_rotate.x, self._plotting_agent.quaternion_to_rotate.y, self._plotting_agent.quaternion_to_rotate.z,
+            self._plotting_agent._quaternion_to_rotate.x, self._plotting_agent._quaternion_to_rotate.y, self._plotting_agent._quaternion_to_rotate.z,
             color='green',
             linewidth=1,
             arrow_length_ratio=0.1
@@ -296,40 +286,25 @@ class PlotHandleAgent_SubPlot_2(SubPlotAgent.SubPlotAgent) :
         self.plot_handle_quaternion_rotated = self._axis.quiver(
 
             0, 0, 0,
-            self._plotting_agent.quaternion_rotated.x, self._plotting_agent.quaternion_rotated.y, self._plotting_agent.quaternion_rotated.z,
+            self._plotting_agent._quaternion_rotated.x, self._plotting_agent._quaternion_rotated.y, self._plotting_agent._quaternion_rotated.z,
             color='magenta',
             linewidth=1,
             arrow_length_ratio=0.1
         )
 
-        # Add the point to the list of points.
-
-        self._plotting_agent.x_components.append(self._plotting_agent.quaternion_rotated.x)
-        self._plotting_agent.y_components.append(self._plotting_agent.quaternion_rotated.y)
-        self._plotting_agent.z_components.append(self._plotting_agent.quaternion_rotated.z)
-
-        print(f"Length self.x_components = {len(self._plotting_agent.x_components):d}")
-        print(f"Length self.y_components = {len(self._plotting_agent.y_components):d}")
-        print(f"Length self.z_components = {len(self._plotting_agent.z_components):d}")
-
-        print(nameMethod + " : self._plotting_agent.x_components = ")
-        print(self._plotting_agent.x_components)
-        print(nameMethod + " : self._plotting_agent.y_components = ")
-        print(self._plotting_agent.y_components)
-        print(nameMethod + " : self._plotting_agent.z_components = ")
-        print(self._plotting_agent.z_components)
-
         if GlobalSettings.plot_quaternion_rotated_history :
 
             self._axis.plot(
 
-                self._plotting_agent.quaternion_rotated.x,
-                self._plotting_agent.quaternion_rotated.y,
-                self._plotting_agent.quaternion_rotated.z,
+                self._plotting_agent._quaternion_rotated.x,
+                self._plotting_agent._quaternion_rotated.y,
+                self._plotting_agent._quaternion_rotated.z,
                 marker='.',
                 linestyle='-',
                 color='magenta'
             )
+
+        print(nameMethod + " : Exit")
 
 
     def _plot_unit_sphere_quaternion_rotation(self) :

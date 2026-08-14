@@ -15,6 +15,7 @@ from PIL.PngImagePlugin import PngInfo
 import colorsys
 
 import GlobalSettings
+import Utils
 
 import PlotHandleAgent_SubPlot_1
 import PlotHandleAgent_SubPlot_2
@@ -33,7 +34,7 @@ class PlottingAgent :
 
     The terms which are involved in the quaternionic rotation - along with the viewing angle information, need to be
     passed into this class before it can generate a plot. Upon receiving all of this information, the class will store
-    its own copies of this information.
+    its own copies of it. By doing this, the information is then available to its two subclasses.
     """
 
     class PlotHandleAgent_Plot :
@@ -49,7 +50,32 @@ class PlottingAgent :
     def __init__(
 
             self,
-            title_plots
+            title_plot
+    ) :
+
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
+
+
+        print(nameMethod + " : Enter")
+
+        self._initialise_attributes(title_plot)
+        self._initialise_plot()
+
+        # We can create the sub-plots now that the main plot has been fully initialised.
+
+        self._create_subplots()
+        self._initialise_subplots()
+
+        print(nameMethod + " : %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+        print(nameMethod + " : %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+        print(nameMethod + " : Exit")
+        print(nameMethod + " : %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+        print(nameMethod + " : %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+
+
+    def _initialise_attributes(self,
+
+        title_plot
     ) :
 
         nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
@@ -63,9 +89,9 @@ class PlottingAgent :
         self._ax1                         = None
         self._ax2                         = None
 
-        self._title_plots                 = title_plots
+        self._title_plot                  = title_plot
 
-        # Attributes which pertain to the quaternion rotation and its viewing angle.
+        # Attributes which pertain to the quaternion rotation.
         #
         # These are local copies of externally generated data.
 
@@ -79,24 +105,21 @@ class PlottingAgent :
         self._quaternion_pre_multiply_min = None
         self._quaternion_pre_multiply_max = None
 
+        # Component arrays to hold the history of the rotated vector.
+
+        self._x_components                = []
+        self._y_components                = []
+        self._z_components                = []
+
+        # Attributes which pertain to the plot's viewing angle.
+
         self._azimuth_view                = None
         self._elevation_view              = None
 
-        self._initialise_plot()
+        self._subPlot_1                   = None
+        self._subPlot_2                   = None
 
-        # We can create the sub-plots now that the main plot has been fully initialised.
-
-        # self.plot_handle_agent           = PlottingAgent.PlotHandleAgent_Plot(self)
-        self._subPlot_1                  = PlotHandleAgent_SubPlot_1.PlotHandleAgent_SubPlot_1(self)
-        self._subPlot_2                  = PlotHandleAgent_SubPlot_2.PlotHandleAgent_SubPlot_2(self)
-
-        self._initialise_subplots()
-
-        print(nameMethod + " : %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
-        print(nameMethod + " : %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
         print(nameMethod + " : Exit")
-        print(nameMethod + " : %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
-        print(nameMethod + " : %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
 
 
     # Invoked by : __init__
@@ -113,6 +136,20 @@ class PlottingAgent :
         print(nameMethod + " : Exit")
 
 
+    def _create_subplots(self) :
+
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
+
+
+        print(nameMethod + " : Enter")
+
+        # self.plot_handle_agent = PlottingAgent.PlotHandleAgent_Plot(self)
+        self._subPlot_1 = PlotHandleAgent_SubPlot_1.PlotHandleAgent_SubPlot_1(self)
+        self._subPlot_2 = PlotHandleAgent_SubPlot_2.PlotHandleAgent_SubPlot_2(self)
+
+        print(nameMethod + " : Exit")
+
+
     def _initialise_subplots(self) :
 
         nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
@@ -120,34 +157,7 @@ class PlottingAgent :
 
         print(nameMethod + " : Enter")
 
-        self._initialise_subplot_1()
-        self._initialise_subplot_2()
-
-        print(nameMethod + " : Exit")
-
-    # Invoked by : _initialise_plot
-
-    def _initialise_subplot_1(self) :
-
-        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
-
-
-        print(nameMethod + " : Enter")
-
         self._subPlot_1.configure()
-
-        print(nameMethod + " : Exit")
-
-
-    # Invoked by : _initialise_plot
-
-    def _initialise_subplot_2(self) :
-
-        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
-
-
-        print(nameMethod + " : Enter")
-
         self._subPlot_2.configure()
 
         print(nameMethod + " : Exit")
@@ -171,56 +181,48 @@ class PlottingAgent :
         quaternion_rotated
     ) :
 
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
+
+
+        print(nameMethod + " : Enter")
+
+        # Update the quaternion values.
+
         self._quaternion_axis_rotation = quaternion_axis_rotation
         self._quaternion_to_rotate     = quaternion_to_rotate
         self._quaternion_pre_multiply  = quaternion_pre_multiply
         self._quaternion_rotated       = quaternion_rotated
 
+        self._update_quaternion_history()
 
-    def _format_component(
-
-            self,
-            name,
-            space,
-            value
-        ) :
-
-            if value < 0 :
-
-                if space :
-
-                    return f"- {name}{abs(value):.3f}"
-
-                else :
-
-                    return f"-{name}{abs(value):.3f}"
-
-            else :
-
-                if space :
-
-                    return f"+ {name}{value:.3f}"
-
-                else :
-
-                    return f" {name}{value:.3f}"
+        print(nameMethod + " : Exit")
 
 
-    def _generate_string(
+    def _update_quaternion_history(self) :
 
-            self,
-            scalar_value,
-            i_value,
-            j_value,
-            k_value
-        ) :
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
-        label  = self.format_component("", False, scalar_value) + " "
-        label += f"{self.format_component('i', True, i_value)} "
-        label += f"{self.format_component('j', True, j_value)} "
-        label += f"{self.format_component('k', True, k_value)}"
 
-        return label
+        print(nameMethod + " : Enter")
+
+        # Add the point to the list of points.
+
+        self._x_components.append(self._quaternion_rotated.x)
+        self._y_components.append(self._quaternion_rotated.y)
+        self._z_components.append(self._quaternion_rotated.z)
+
+        print(f"Length self.x_components = {len(self._x_components):d}")
+        print(f"Length self.y_components = {len(self._y_components):d}")
+        print(f"Length self.z_components = {len(self._z_components):d}")
+
+        print(nameMethod + " : self._plotting_agent.x_components = ")
+        print(self._x_components)
+        print(nameMethod + " : self._plotting_agent.y_components = ")
+        print(self._y_components)
+        print(nameMethod + " : self._plotting_agent.z_components = ")
+        print(self._z_components)
+
+        print(nameMethod + " : Exit")
 
 
     # Invoked by : _initialise_plot
@@ -403,35 +405,35 @@ class PlottingAgent :
 
         self.metadata = {
             "view" : {
-                "azimuth"   : self.azimuth_view,
-                "elevation" : self.elevation_view
+                "azimuth"   : self._azimuth_view,
+                "elevation" : self._elevation_view
             },
             "rotation" : {
                 "angle" : self.angle_rotation,
                 "axis" : {
-                    "scalar" : self.quaternion_axis_rotation.w,
-                    "x"      : self.quaternion_axis_rotation.x,
-                    "y"      : self.quaternion_axis_rotation.y,
-                    "z"      : self.quaternion_axis_rotation.z
+                    "scalar" : self._quaternion_axis_rotation.w,
+                    "x"      : self._quaternion_axis_rotation.x,
+                    "y"      : self._quaternion_axis_rotation.y,
+                    "z"      : self._quaternion_axis_rotation.z
                 },
             },
             "quaternion_to_rotate": {
-                "scalar"     : self.quaternion_to_rotate.w,
-                "x"          : self.quaternion_to_rotate.x,
-                "y"          : self.quaternion_to_rotate.y,
-                "z"          : self.quaternion_to_rotate.z
+                "scalar"     : self._quaternion_to_rotate.w,
+                "x"          : self._quaternion_to_rotate.x,
+                "y"          : self._quaternion_to_rotate.y,
+                "z"          : self._quaternion_to_rotate.z
             },
             "quaternion_pre_multiply": {
-                "scalar"     : self.quaternion_pre_multiply.w,
-                "x"          : self.quaternion_pre_multiply.x,
-                "y"          : self.quaternion_pre_multiply.y,
-                "z"          : self.quaternion_pre_multiply.z
+                "scalar"     : self._quaternion_pre_multiply.w,
+                "x"          : self._quaternion_pre_multiply.x,
+                "y"          : self._quaternion_pre_multiply.y,
+                "z"          : self._quaternion_pre_multiply.z
             },
             "quaternion_rotated": {
-                "scalar"     : self.quaternion_rotated.w,
-                "x"          : self.quaternion_rotated.x,
-                "y"          : self.quaternion_rotated.y,
-                "z"          : self.quaternion_rotated.z
+                "scalar"     : self._quaternion_rotated.w,
+                "x"          : self._quaternion_rotated.x,
+                "y"          : self._quaternion_rotated.y,
+                "z"          : self._quaternion_rotated.z
             },
         }
 
@@ -631,8 +633,8 @@ class PlottingAgent :
             elevation_view
     ) :
 
-        self.azimuth_view   = azimuth_view
-        self.elevation_view = elevation_view
+        self._azimuth_view   = azimuth_view
+        self._elevation_view = elevation_view
 
 
     def _save_plot_to_file(
@@ -813,11 +815,11 @@ class PlottingAgent :
 
         print(nameMethod + " : Enter")
 
-        self._subPlot_1.set_rgb_value_for_sphere_surface()
+        self._subPlot_1._set_rgb_value_for_sphere_surface()
 
         print(nameMethod + " : MARKER 1")
 
-        self._subPlot_2.set_rgb_value_for_sphere_surface()
+        self._subPlot_2._set_rgb_value_for_sphere_surface()
 
         print(nameMethod + " : Exit")
 
@@ -848,11 +850,11 @@ class PlottingAgent :
         nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
 
-        print(nameMethod + " : ::::::::::::::::::::::::::::::::::::::::")
-        print(nameMethod + " : ::::::::::::::::::::::::::::::::::::::::")
+        print(nameMethod + " : >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+        print(nameMethod + " : >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
         print(nameMethod + " : Enter")
-        print(nameMethod + " : ::::::::::::::::::::::::::::::::::::::::")
-        print(nameMethod + " : ::::::::::::::::::::::::::::::::::::::::")
+        print(nameMethod + " : >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+        print(nameMethod + " : >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 
         self._plot_result_display_diagnostics()
 
@@ -872,7 +874,11 @@ class PlottingAgent :
 
         self._remove_artifacts_from_plot()
 
+        print(nameMethod + " : <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+        print(nameMethod + " : <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
         print(nameMethod + " : Exit")
+        print(nameMethod + " : <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+        print(nameMethod + " : <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
 
 
     def _destroy_plot(self) :

@@ -49,6 +49,8 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
         self._plot_handle_quaternion_pre_multiply         = None
         self._plot_handle_quaternion_pre_multiply_history = None
 
+        self._rgb_value_sphere                             = None
+
         self.rgb_value_min                                = colorsys.hsv_to_rgb(0, 0, 1.0)
         self.rgb_value_max                                = colorsys.hsv_to_rgb(0, 0, 1.0)
 
@@ -75,7 +77,7 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
         self._axis = self._plotting_agent.ax1
 
         self._add_colormap()
-        # self._plot_unit_sphere_quaternion_pre_multiply()
+        self._plot_unit_sphere()
         self._plot_axes()
 
         print(nameMethod + " : About to invoke : self.set_aspect_ratios_and_extents")
@@ -179,10 +181,29 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
     def clear_plot_handle_colormap_arrow(self):
 
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
+
+
+        print(nameMethod + " : !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print(nameMethod + " : !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print(nameMethod + " : Enter")
+        print(nameMethod + " : !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print(nameMethod + " : !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
         if self._plot_handle_colormap_arrow is not None :
+
+            print(nameMethod + " : self._plot_handle_colormap_arrow is not None")
 
             self._plot_handle_colormap_arrow.remove()
             self._plot_handle_colormap_arrow = None
+
+        print(nameMethod + " : self._plot_handle_colormap_arrow is None")
+
+        print(nameMethod + " : !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print(nameMethod + " : !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print(nameMethod + " : Exit")
+        print(nameMethod + " : !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print(nameMethod + " : !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
 
     def clear_plot_handle_quaternion_pre_multiply(self) :
@@ -200,20 +221,20 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
         self.clear_plot_handle_colormap_arrow()
 
 
-    def set_rgb_value_for_sphere_surface(self) :
+    def _set_rgb_value_for_sphere_surface(self) :
 
         nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
 
         print(nameMethod + " : Enter")
 
-        if self._plotting_agent.quaternion_pre_multiply is None :
+        if self._plotting_agent._quaternion_pre_multiply is None :
 
             hue_value = 0.5
 
         else :
 
-            hue_value = ((self._plotting_agent.quaternion_pre_multiply.w) * 0.5) + 0.5
+            hue_value = ((self._plotting_agent._quaternion_pre_multiply.w) * 0.5) + 0.5
 
         self._rgb_value_sphere = colorsys.hsv_to_rgb(
 
@@ -225,7 +246,7 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
         print(nameMethod + " : Exit")
 
 
-    def plot_unit_sphere(self) :
+    def _plot_unit_sphere(self) :
 
         nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
@@ -250,7 +271,7 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
         print(nameMethod + " : MARKER 2")
 
         self.plot_handle_surface = self._axis.plot_surface(x, y, z,
-                                                     color=self.rgb_value_sphere_subplot_1,
+                                                     color=self._rgb_value_sphere,
                                                      alpha=0.2,
                                                      linewidth=0
                                                     )
@@ -278,13 +299,13 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
         # If an arrow currently points to the colorbar, then remove it.
         # Then place a new updated arrow next to the colorbar.
 
-        self.clear_plot_handle_colormap_arrow()
+        # self.clear_plot_handle_colormap_arrow()
 
-        current_value = self._plotting_agent.quaternion_pre_multiply.w
+        current_value = self._plotting_agent._quaternion_pre_multiply.w
 
         print(nameMethod + " : MARKER 2")
 
-        self.plot_handle_colormap_arrow = self._plot_handle_colormap.ax.annotate(
+        self._plot_handle_colormap_arrow = self._plot_handle_colormap.ax.annotate(
             "",
             xy=(1.0, current_value),  # Arrow tip
             xytext=(1.5, current_value),  # Arrow tail
@@ -315,14 +336,19 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
         print(nameMethod + " : MARKER 1")
 
         self._update_colorbar()
+        self._set_rgb_value_for_sphere_surface()
+
+        self._plot_unit_sphere()
 
         self._plot_quaternion_pre_multiply()
         # self.add_labels_to_plot(axis)
 
+        print(nameMethod + " : Elevation = " + str(self._plotting_agent._elevation_view))
+
         self._axis.view_init(
 
-            elev=self._plotting_agent.elevation_view,
-            azim=self._plotting_agent.azimuth_view
+            elev=self._plotting_agent._elevation_view,
+            azim=self._plotting_agent._azimuth_view
         )
 
         print(nameMethod + " : Exit")
@@ -346,8 +372,8 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
         self._plot_handle_quaternion_pre_multiply = self._axis.quiver(
 
             0, 0, 0,
-            self._plotting_agent.quaternion_pre_multiply.x, self._plotting_agent.quaternion_pre_multiply.y,
-            self._plotting_agent.quaternion_pre_multiply.z,
+            self._plotting_agent._quaternion_pre_multiply.x, self._plotting_agent._quaternion_pre_multiply.y,
+            self._plotting_agent._quaternion_pre_multiply.z,
             color='blue',
             linewidth=1,
             arrow_length_ratio=0.1
@@ -357,7 +383,7 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
             # Append the current point onto the end of the plot history.
 
-            hue_value = ((self._plotting_agent.quaternion_pre_multiply.x) * 0.5) + 0.5
+            hue_value = ((self._plotting_agent._quaternion_pre_multiply.x) * 0.5) + 0.5
 
             rgb_value = colorsys.hsv_to_rgb(
 
@@ -368,7 +394,7 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
             markersize_value = (hue_value * 4) + 2
 
-            if self._plotting_agent.quaternion_pre_multiply.w < 0 :
+            if self._plotting_agent._quaternion_pre_multiply.w < 0 :
 
                 marker_value = 'v'
 
@@ -378,9 +404,9 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
             sub_plot.plot(
 
-                self._plotting_agent.quaternion_pre_multiply.x,
-                self._plotting_agent.quaternion_pre_multiply.y,
-                self._plotting_agent.quaternion_pre_multiply.z,
+                self._plotting_agent._quaternion_pre_multiply.x,
+                self._plotting_agent._quaternion_pre_multiply.y,
+                self._plotting_agent._quaternion_pre_multiply.z,
                 marker=marker_value,
                 markersize=markersize_value,
                 linestyle='-',
