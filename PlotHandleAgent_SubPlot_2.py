@@ -1,8 +1,13 @@
 import sys
 import colorsys
 
+import numpy             as np
 
-class PlotHandleAgent_SubPlot_2:
+import GlobalSettings
+import SubPlotAgent
+
+
+class PlotHandleAgent_SubPlot_2(SubPlotAgent.SubPlotAgent) :
 
 
     """This class handles all the artifacts/artists that are required by the plots.
@@ -18,8 +23,10 @@ class PlotHandleAgent_SubPlot_2:
 
     def __init__(self,
 
-                 plotting_agent: PlottingAgent
-                 ):
+        plotting_agent: PlottingAgent
+    ) :
+
+        super().__init__(plotting_agent)
 
         self._plotting_agent = plotting_agent
 
@@ -37,10 +44,24 @@ class PlotHandleAgent_SubPlot_2:
         self._plot_handle_axis_rotation = None
         self._plot_handle_to_rotate     = None
 
+        self.label_quaternion_axis_rotation    = ""
+        self.label_quaternion_to_rotate        = ""
+        self.label_quaternion_pre_multiply     = ""
+        self.label_quaternion_pre_multiply_min = ""
+        self.label_quaternion_pre_multiply_max = ""
+        self.label_quaternion_rotated          = ""
+        self.label_angle_rotation              = ""
+
         # Vector and history of vector points.
 
         self._plot_handle_quaternion_rotated         = None
         self._plot_handle_quaternion_rotated_history = None
+
+        # Component arrays to hold the history of the rotated vector.
+
+        self.x_components                = []
+        self.y_components                = []
+        self.z_components                = []
 
 
     def set_plot_handle_title_subplot_2(self,
@@ -109,7 +130,99 @@ class PlotHandleAgent_SubPlot_2:
         print(nameMethod + " : Exit")
 
 
+    def configure(self) :
+
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
+
+
+        print(nameMethod + " : Enter")
+
+        self._plot_unit_sphere_quaternion_rotation()
+        self._plot_axes()
+
+        print(nameMethod + " : About to invoke : self.set_aspect_ratios_and_extents")
+        self._set_aspect_ratios_and_extents()
+
+        self._fill_panes()
+        self._configure_grid()
+        # self.create_static_labels()
+
+        print(nameMethod + " : Exit")
+
+
     def _set_title(self) :
+
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
+
+
+        print(nameMethod + " : Enter")
+
+        print(nameMethod + " : Exit")
+
+
+    # Invoked by : configure
+
+    def _set_aspect_ratios_and_extents(self) :
+
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
+
+
+        print(nameMethod + " : Enter")
+
+        # ----------------------------
+        # Set equal aspect ratio
+        # ----------------------------
+
+        max_extent = max(
+            np.max(np.abs(self._v)),
+            1.0
+        )
+
+        self._axis.set_xlim([-max_extent, max_extent])
+        self._axis.set_ylim([-max_extent, max_extent])
+        self._axis.set_zlim([-max_extent, max_extent])
+
+        self._axis.set_box_aspect([1, 1, 1])
+
+        print(nameMethod + " : Exit")
+
+
+    # Invoked by : configure
+
+    def _plot_axes(self) :
+
+        # Plot;
+        #
+        #   x axis
+        #   y axis
+        #   z axis
+
+        self._axis.quiver(
+            -1.2, 0, 0,
+            2.4, 0, 0,
+            color='black',
+            linewidth=1,
+            arrow_length_ratio=0.025
+        )
+
+        self._axis.quiver(
+            0, -1.2, 0,
+            0, 2.4, 0,
+            color='black',
+            linewidth=1,
+            arrow_length_ratio=0.025
+        )
+
+        self._axis.quiver(
+            0, 0, -1.2,
+            0, 0, 2.4,
+            color='black',
+            linewidth=1,
+            arrow_length_ratio=0.025
+        )
+
+
+    def _set_legend(self) :
 
         nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
@@ -161,7 +274,7 @@ class PlotHandleAgent_SubPlot_2:
         self.plot_handle_quaternion_axis_rotation = self._axis.quiver(
 
             0, 0, 0,
-            self.quaternion_axis_rotation.x, self.quaternion_axis_rotation.y, self.quaternion_axis_rotation.z,
+            self._plotting_agent.quaternion_axis_rotation.x, self._plotting_agent.quaternion_axis_rotation.y, self._plotting_agent.quaternion_axis_rotation.z,
             color='red',
             linewidth=1,
             arrow_length_ratio=0.1
@@ -172,7 +285,7 @@ class PlotHandleAgent_SubPlot_2:
         self.plot_handle_quaternion_to_rotate = self._axis.quiver(
 
             0, 0, 0,
-            self.quaternion_to_rotate.x, self.quaternion_to_rotate.y, self.quaternion_to_rotate.z,
+            self._plotting_agent.quaternion_to_rotate.x, self._plotting_agent.quaternion_to_rotate.y, self._plotting_agent.quaternion_to_rotate.z,
             color='green',
             linewidth=1,
             arrow_length_ratio=0.1
@@ -183,7 +296,7 @@ class PlotHandleAgent_SubPlot_2:
         self.plot_handle_quaternion_rotated = self._axis.quiver(
 
             0, 0, 0,
-            self.quaternion_rotated.x, self.quaternion_rotated.y, self.quaternion_rotated.z,
+            self._plotting_agent.quaternion_rotated.x, self._plotting_agent.quaternion_rotated.y, self._plotting_agent.quaternion_rotated.z,
             color='magenta',
             linewidth=1,
             arrow_length_ratio=0.1
@@ -191,29 +304,90 @@ class PlotHandleAgent_SubPlot_2:
 
         # Add the point to the list of points.
 
-        self.x_components.append(self.quaternion_rotated.x)
-        self.y_components.append(self.quaternion_rotated.y)
-        self.z_components.append(self.quaternion_rotated.z)
+        self._plotting_agent.x_components.append(self._plotting_agent.quaternion_rotated.x)
+        self._plotting_agent.y_components.append(self._plotting_agent.quaternion_rotated.y)
+        self._plotting_agent.z_components.append(self._plotting_agent.quaternion_rotated.z)
 
-        print(f"Length self.x_components = {len(self.x_components):d}")
-        print(f"Length self.y_components = {len(self.y_components):d}")
-        print(f"Length self.z_components = {len(self.z_components):d}")
+        print(f"Length self.x_components = {len(self._plotting_agent.x_components):d}")
+        print(f"Length self.y_components = {len(self._plotting_agent.y_components):d}")
+        print(f"Length self.z_components = {len(self._plotting_agent.z_components):d}")
 
-        print(nameMethod + " : self.x_components = ")
-        print(self.x_components)
-        print(nameMethod + " : self.y_components = ")
-        print(self.y_components)
-        print(nameMethod + " : self.z_components = ")
-        print(self.z_components)
+        print(nameMethod + " : self._plotting_agent.x_components = ")
+        print(self._plotting_agent.x_components)
+        print(nameMethod + " : self._plotting_agent.y_components = ")
+        print(self._plotting_agent.y_components)
+        print(nameMethod + " : self._plotting_agent.z_components = ")
+        print(self._plotting_agent.z_components)
 
         if GlobalSettings.plot_quaternion_rotated_history :
 
             self._axis.plot(
 
-                self.quaternion_rotated.x,
-                self.quaternion_rotated.y,
-                self.quaternion_rotated.z,
+                self._plotting_agent.quaternion_rotated.x,
+                self._plotting_agent.quaternion_rotated.y,
+                self._plotting_agent.quaternion_rotated.z,
                 marker='.',
                 linestyle='-',
                 color='magenta'
             )
+
+
+    def _plot_unit_sphere_quaternion_rotation(self) :
+
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
+
+
+        print(nameMethod + " : Enter")
+
+        # ----------------------------
+        # Plot the unit sphere.
+        # ----------------------------
+
+        u = np.linspace(0, 2 * np.pi, 100)
+        v_sphere = np.linspace(0, np.pi, 100)
+
+        x = np.outer(np.cos(u), np.sin(v_sphere))
+        y = np.outer(np.sin(u), np.sin(v_sphere))
+        z = np.outer(np.ones_like(u), np.cos(v_sphere))
+
+        # ax.plot_surface(
+        #     x, y, z,
+        #     alpha=0.25,
+        #     linewidth=0,
+        #     antialiased=True
+        # )
+
+        # ax.plot_wireframe(
+        #     x, y, z,
+        #     color='gray',
+        #     linewidth=0.5,
+        #     alpha=0.5,
+        #     rstride=5,
+        #     cstride=5
+        # )
+
+        hue_value = 0.5
+
+        rgb_value = colorsys.hsv_to_rgb(
+
+            hue_value,  # hue (0–1)
+            1.0,  # saturation
+            1.0  # value
+        )
+
+        self._axis.plot_surface(
+            x, y, z,
+            color=rgb_value,
+            alpha=0.2,
+            linewidth=0
+        )
+
+        self._axis.plot_wireframe(
+            x, y, z,
+            color='black',
+            linewidth=0.4,
+            rstride=4,
+            cstride=4
+        )
+
+        print(nameMethod + " : Exit")

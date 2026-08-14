@@ -25,6 +25,17 @@ show_plots = False
 
 class PlottingAgent :
 
+    """
+    Implements a class which is responsible for generating plots.
+
+    The plots which this class generates, will be of the terms which are involved in a quaternionic rotation. Each plot
+    will be composed of two sub-plots, where each of the two sub-plots is handled by its own class within this class.
+
+    The terms which are involved in the quaternionic rotation - along with the viewing angle information, need to be
+    passed into this class before it can generate a plot. Upon receiving all of this information, the class will store
+    its own copies of this information.
+    """
+
     class PlotHandleAgent_Plot :
 
         def __init__(self,
@@ -46,18 +57,24 @@ class PlottingAgent :
 
         print(nameMethod + " : Enter")
 
+        # Attributes which pertain to the layout of the plot.
+
         self._fig                         = None
         self._ax1                         = None
         self._ax2                         = None
 
         self._title_plots                 = title_plots
 
+        # Attributes which pertain to the quaternion rotation and its viewing angle.
+        #
+        # These are local copies of externally generated data.
+
         self._angle_rotation              = None
 
-        self._quaternion_axis_rotation   = None
-        self._quaternion_to_rotate       = None
-        self._quaternion_pre_multiply    = None
-        self._quaternion_rotated         = None
+        self._quaternion_axis_rotation    = None
+        self._quaternion_to_rotate        = None
+        self._quaternion_pre_multiply     = None
+        self._quaternion_rotated          = None
 
         self._quaternion_pre_multiply_min = None
         self._quaternion_pre_multiply_max = None
