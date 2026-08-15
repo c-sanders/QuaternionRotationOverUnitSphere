@@ -10,6 +10,7 @@ from   matplotlib.colors import Normalize
 from   matplotlib.cm     import ScalarMappable
 
 import GlobalSettings
+import Utils
 import SubPlotAgent
 
 
@@ -45,11 +46,11 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
         self._plot_handle_colormap                        = None
         self._plot_handle_colormap_arrow                  = None
+        self._plot_handle_colormap_arrow_min              = None
+        self._plot_handle_colormap_arrow_max              = None
 
         self._plot_handle_quaternion_pre_multiply         = None
         self._plot_handle_quaternion_pre_multiply_history = None
-
-        self._rgb_value_sphere                             = None
 
         self.rgb_value_min                                = colorsys.hsv_to_rgb(0, 0, 1.0)
         self.rgb_value_max                                = colorsys.hsv_to_rgb(0, 0, 1.0)
@@ -90,11 +91,18 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
         print(nameMethod + " : Exit")
 
 
-    def set_title(self,
+    # Invoked by : generate_plot
+
+    def _set_title(self,
 
         plot_handle_title,
         raise_if_set
     ) :
+
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
+
+
+        print(nameMethod + " : Enter")
 
         if (
             (raise_if_set) and
@@ -103,7 +111,18 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
             raise Exception("Attribute _plot_handle_title_subplot_1 : Trying to set this attribute whilst it is already set.")
 
-        self.plot_handle_title_subplot_1 = plot_handle_title
+        # self.plot_handle_title_subplot_1 = plot_handle_title
+
+        w = Utils.format_component("", False, self._plotting_agent._quaternion_pre_multiply.w)
+
+        title_sub_plot = r"$qv$ in $S^{3}$ with $w=" + str(w) + "$"
+
+        self._axis.set_title(
+            title_sub_plot,
+            fontsize=14
+        )
+
+        print(nameMethod + " : Exit")
 
 
     def clear_plot_title(self) :
@@ -128,9 +147,9 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
         # ----------------------------
 
         max_extent = max(
-            np.max(np.abs(self._v)),
-            1.0
-        )
+                         np.max(np.abs(self._v)),
+                         1.0
+                        )
 
         self._axis.set_xlim([-max_extent, max_extent])
         self._axis.set_ylim([-max_extent, max_extent])
@@ -169,9 +188,17 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
         self._plot_handle_colormap.set_label(GlobalSettings.title_colormap)
 
 
+    def _clear_sphere_wire_frame(self) :
+
+        if self._plot_handle_sphere_wire_frame is not None :
+
+            self._plot_handle_sphere_wire_frame.remove()
+            self._plot_handle_sphere_wire_frame = None
+
+
     # Invoked by : PlottingAgent::_plot_unit_sphere_quaternion_pre_multiply
 
-    def clear_sphere_surface(self):
+    def _clear_sphere_surface(self):
 
         if self._plot_handle_surface is not None :
 
@@ -179,7 +206,7 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
             self._plot_handle_surface = None
 
 
-    def clear_plot_handle_colormap_arrow(self):
+    def _clear_plot_handle_colormap_arrows(self):
 
         nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
@@ -197,6 +224,12 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
             self._plot_handle_colormap_arrow.remove()
             self._plot_handle_colormap_arrow = None
 
+        self._plot_handle_colormap_arrow_min.remove()
+        self._plot_handle_colormap_arrow_max.remove()
+
+        self._plot_handle_colormap_arrow_min = None
+        self._plot_handle_colormap_arrow_max = None
+
         print(nameMethod + " : self._plot_handle_colormap_arrow is None")
 
         print(nameMethod + " : !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
@@ -206,7 +239,7 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
         print(nameMethod + " : !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
 
-    def clear_plot_handle_quaternion_pre_multiply(self) :
+    def _clear_plot_handle_quaternion_pre_multiply(self) :
 
         if self._plot_handle_quaternion_pre_multiply is not None :
 
@@ -216,75 +249,10 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
     def clear_artifacts(self):
 
-        self.clear_plot_handle_quaternion_pre_multiply()
-        self.clear_sphere_surface()
-        self.clear_plot_handle_colormap_arrow()
-
-
-    def _set_rgb_value_for_sphere_surface(self) :
-
-        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
-
-
-        print(nameMethod + " : Enter")
-
-        if self._plotting_agent._quaternion_pre_multiply is None :
-
-            hue_value = 0.5
-
-        else :
-
-            hue_value = ((self._plotting_agent._quaternion_pre_multiply.w) * 0.5) + 0.5
-
-        self._rgb_value_sphere = colorsys.hsv_to_rgb(
-
-            hue_value,  # hue (0–1)
-            1.0,  # saturation
-            1.0  # value
-        )
-
-        print(nameMethod + " : Exit")
-
-
-    def _plot_unit_sphere(self) :
-
-        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
-
-
-        print(nameMethod + " : Enter")
-
-        # ----------------------------
-        # Plot the unit sphere.
-        # ----------------------------
-
-        u = np.linspace(0, 2 * np.pi, 100)
-        v_sphere = np.linspace(0, np.pi, 100)
-
-        x = np.outer(np.cos(u), np.sin(v_sphere))
-        y = np.outer(np.sin(u), np.sin(v_sphere))
-        z = np.outer(np.ones_like(u), np.cos(v_sphere))
-
-        # If this sub-plot already contains a plot of a unit sphere, then delete it.
-
-        self.clear_sphere_surface()
-
-        print(nameMethod + " : MARKER 2")
-
-        self.plot_handle_surface = self._axis.plot_surface(x, y, z,
-                                                     color=self._rgb_value_sphere,
-                                                     alpha=0.2,
-                                                     linewidth=0
-                                                    )
-
-        self._axis.plot_wireframe(
-            x, y, z,
-            color='black',
-            linewidth=0.4,
-            rstride=4,
-            cstride=4
-        )
-
-        print(nameMethod + " : Exit")
+        self._clear_plot_handle_quaternion_pre_multiply()
+        self._clear_sphere_wire_frame()
+        self._clear_sphere_surface()
+        self._clear_plot_handle_colormap_arrows()
 
 
     # Invoked by : generate_plot
@@ -301,9 +269,17 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
         # self.clear_plot_handle_colormap_arrow()
 
-        current_value = self._plotting_agent._quaternion_pre_multiply.w
+        current_value     = self._plotting_agent._quaternion_pre_multiply.w
+        current_value_min = self._plotting_agent._quaternion_pre_multiply_min
+        current_value_max = self._plotting_agent._quaternion_pre_multiply_max
 
         print(nameMethod + " : MARKER 2")
+
+        # Plot the arrows which are associated with the color bar.
+        #
+        # - The arrow associated with the current value.
+        # - The arrow associated with the minimum value.
+        # - The arrow associated with the maximum value.
 
         self._plot_handle_colormap_arrow = self._plot_handle_colormap.ax.annotate(
             "",
@@ -318,37 +294,30 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
             )
         )
 
-        print(nameMethod + " : Exit")
+        self._plot_handle_colormap_arrow_min = self._plot_handle_colormap.ax.annotate(
+            "",
+            xy=(1.0, current_value_min),  # Arrow tip
+            xytext=(1.5, current_value_min),  # Arrow tail
+            xycoords=("axes fraction", "data"),
+            textcoords=("axes fraction", "data"),
+            arrowprops=dict(
+                arrowstyle="simple",
+                color="red",
+                lw=2
+            )
+        )
 
-
-    def generate_plot(self) :
-
-        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
-
-
-        print(nameMethod + " : Enter")
-
-        #
-
-        self.set_title(GlobalSettings.display_legend_subplot_1, GlobalSettings.raise_exception_if_already_set)
-        print(nameMethod + " : MARKER 0")
-        self._set_legend(False)
-        print(nameMethod + " : MARKER 1")
-
-        self._update_colorbar()
-        self._set_rgb_value_for_sphere_surface()
-
-        self._plot_unit_sphere()
-
-        self._plot_quaternion_pre_multiply()
-        # self.add_labels_to_plot(axis)
-
-        print(nameMethod + " : Elevation = " + str(self._plotting_agent._elevation_view))
-
-        self._axis.view_init(
-
-            elev=self._plotting_agent._elevation_view,
-            azim=self._plotting_agent._azimuth_view
+        self._plot_handle_colormap_arrow_max = self._plot_handle_colormap.ax.annotate(
+            "",
+            xy=(1.0, current_value_max),  # Arrow tip
+            xytext=(1.5, current_value_max),  # Arrow tail
+            xycoords=("axes fraction", "data"),
+            textcoords=("axes fraction", "data"),
+            arrowprops=dict(
+                arrowstyle="simple",
+                color="green",
+                lw=2
+            )
         )
 
         print(nameMethod + " : Exit")
@@ -462,7 +431,7 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
                 fontsize=10
             )
 
-            hue_value = ((self.quaternion_pre_multiply.w) * 0.5) + 0.5
+            hue_value = ((self._quaternion_pre_multiply.w) * 0.5) + 0.5
 
             rgb_value_local = colorsys.hsv_to_rgb(
 
@@ -478,5 +447,44 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
             print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 
             self.plot_handle_legend.get_texts()[2].set_color(rgb_value_local)
+
+        print(nameMethod + " : Exit")
+
+
+    def generate_plot(self) :
+
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
+
+
+        print(nameMethod + " : Enter")
+
+        # - Set the title which is to be used for this sub-plot.
+        # - Set the legend which is to be used for this sub-plot.
+
+        self._set_title(GlobalSettings.display_legend_subplot_1, GlobalSettings.raise_exception_if_already_set)
+        print(nameMethod + " : MARKER 0")
+        self._set_legend(False)
+        print(nameMethod + " : MARKER 1")
+
+        # - Move the arrow that is associated with the color bar.
+        # - Set the color which is to be used for the surface of the sphere.
+
+        self._update_colorbar()
+        self._set_rgb_value_for_sphere_surface()
+
+        # Plot the unit sphere.
+
+        self._plot_unit_sphere()
+
+        self._plot_quaternion_pre_multiply()
+        # self.add_labels_to_plot(axis)
+
+        print(nameMethod + " : Elevation = " + str(self._plotting_agent._elevation_view))
+
+        self._axis.view_init(
+
+            elev=self._plotting_agent._elevation_view,
+            azim=self._plotting_agent._azimuth_view
+        )
 
         print(nameMethod + " : Exit")

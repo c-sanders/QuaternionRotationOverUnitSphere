@@ -195,6 +195,8 @@ class PlottingAgent :
 
         self._update_quaternion_history()
 
+        self._update_min_max_values()
+
         print(nameMethod + " : Exit")
 
 
@@ -270,7 +272,7 @@ class PlottingAgent :
         print(nameMethod + " : Exit")
 
 
-    def _check_min_max_values(self) :
+    def _update_min_max_values(self) :
 
         if (
             (self._quaternion_pre_multiply_max is None) or
@@ -290,24 +292,21 @@ class PlottingAgent :
 
         # Check if the scalar component of qv has reached a new minimum.
 
-        if self._quaternion_pre_multiply_min is None :
+        if (
+            (self._quaternion_pre_multiply_min is None) or
+            (self._quaternion_pre_multiply.w < self._quaternion_pre_multiply_min)
+           ) :
 
             self._quaternion_pre_multiply_min = self._quaternion_pre_multiply.w
 
-        else :
+            hue_value = ((self._quaternion_pre_multiply.w) * 0.5) + 0.5
 
-            if (self.quaternion_pre_multiply.w < self.quaternion_pre_multiply_min) :
+            self.rgb_value_min = colorsys.hsv_to_rgb(
 
-                self.quaternion_pre_multiply_min = self.quaternion_pre_multiply.w
-
-                hue_value = ((self.quaternion_pre_multiply.w) * 0.5) + 0.5
-
-                self.rgb_value_min = colorsys.hsv_to_rgb(
-
-                    hue_value,  # hue (0–1)
-                    1.0,  # saturation
-                    1.0  # value
-                )
+                hue_value,  # hue (0–1)
+                1.0,  # saturation
+                1.0  # value
+            )
 
 
     def _add_labels_to_plot(
@@ -350,8 +349,8 @@ class PlottingAgent :
 
         self.check_min_max_values()
 
-        label_quaternion_pre_multiply_min = self.format_component("", False, self.quaternion_pre_multiply_min)
-        label_quaternion_pre_multiply_max = self.format_component("", False, self.quaternion_pre_multiply_max)
+        label_quaternion_pre_multiply_min = format_component("", False, self.quaternion_pre_multiply_min)
+        label_quaternion_pre_multiply_max = format_component("", False, self.quaternion_pre_multiply_max)
 
         self.label_quaternion_axis_rotation    = f"Axis of rotation (q)     : " + label_quaternion_axis_rotation
         self.label_quaternion_to_rotate        = f"Quaternion to rotate (v) : " + label_quaternion_to_rotate
@@ -786,7 +785,7 @@ class PlottingAgent :
 
         self.fig.suptitle(
             GlobalSettings.title_plot,
-            fontsize=14
+            fontsize=20
         )
 
         print(nameMethod + " : Exit")

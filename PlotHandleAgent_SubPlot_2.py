@@ -125,7 +125,7 @@ class PlotHandleAgent_SubPlot_2(SubPlotAgent.SubPlotAgent) :
 
         print(nameMethod + " : Enter")
 
-        self._plot_unit_sphere_quaternion_rotation()
+        self._plot_unit_sphere()
         self._plot_axes()
 
         print(nameMethod + " : About to invoke : self.set_aspect_ratios_and_extents")
@@ -307,7 +307,7 @@ class PlotHandleAgent_SubPlot_2(SubPlotAgent.SubPlotAgent) :
         print(nameMethod + " : Exit")
 
 
-    def _plot_unit_sphere_quaternion_rotation(self) :
+    def _plot_unit_sphere(self) :
 
         nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
