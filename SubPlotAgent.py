@@ -5,6 +5,8 @@ import numpy as np
 
 from   matplotlib.ticker import MultipleLocator
 
+import PlottingAgent
+
 
 class SubPlotAgent :
 
@@ -20,6 +22,9 @@ class SubPlotAgent :
 
         self._plotting_agent = plotting_agent
 
+        self._counter = 0
+        self._counter_hue_value = 0
+
         # Declare the following attributes;
         #
         #   - axis which this sub-plot belongs to
@@ -30,6 +35,8 @@ class SubPlotAgent :
         self._axis                                        = None
 
         self._plot_handle_title_subplot                   = None
+
+        self._hue_value                                   = None
 
         self._rgb_value_sphere                            = None
         self._plot_handle_surface                         = None
@@ -116,18 +123,41 @@ class SubPlotAgent :
 
 
         print(nameMethod + " : Enter")
+        print(nameMethod + " : +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")
+        print(nameMethod + " : +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")
 
         if self._plotting_agent._quaternion_pre_multiply is None :
 
-            hue_value = 0.5
+            self._hue_value = 0.5
+            print(nameMethod + " : self._plotting_agent._quaternion_pre_multiply is None")
 
         else :
 
-            hue_value = ((self._plotting_agent._quaternion_pre_multiply.w) * 0.5) + 0.5
+            self._hue_value = ((self._plotting_agent._quaternion_pre_multiply.w) * 0.5) + 0.5
+            print(nameMethod + " : self._plotting_agent._quaternion_pre_multiply is NOT None")
+            print(nameMethod + " : self._plotting_agent._quaternion_pre_multiply.w = " + str(self._plotting_agent._quaternion_pre_multiply.w))
+
+        print(nameMethod + " : +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")
+        print(nameMethod + " : Counter = " + str(self._counter))
+        print(nameMethod + " : Counter hue value = " + str(self._counter_hue_value))
+        print(nameMethod + " : +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")
+        print(nameMethod + " : self._hue_value = " + str(self._hue_value))
+        print(nameMethod + " : +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")
+        print(nameMethod + " : +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")
+
+        self._counter = self._counter + 1
+
+        if self._hue_value == 0.5 :
+
+            self._counter_hue_value = self._counter_hue_value + 1
+
+        # if self._counter_hue_value == 5 :
+
+            # raise Exception("Problem with hue value!!!")
 
         self._rgb_value_sphere = colorsys.hsv_to_rgb(
 
-            hue_value,  # hue (0–1)
+            self._hue_value,  # hue (0–1)
             1.0,  # saturation
             1.0  # value
         )

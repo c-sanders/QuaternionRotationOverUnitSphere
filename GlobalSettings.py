@@ -22,3 +22,7 @@ display_legend_subplot_2 = False
 raise_exception_if_already_set = True
 
 title_colormap = "Value of w for the 4d hyperspheres"
+
+image_dimensions    = (8, 10)
+image_dpi           = 300
+image_bbox_argument = None

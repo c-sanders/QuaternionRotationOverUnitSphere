@@ -1,14 +1,11 @@
 import sys
 import math
-from   matplotlib        import font_manager
 import subprocess
 
-# Import the Numerical Python package, aka numpy.
+# Import the Numerical Python package, aka numpy, along with its definition of quaternion.
 
 import numpy as np
 import quaternion
-
-import colorsys
 
 import GlobalSettings
 from   PlottingAgent import PlottingAgent
@@ -250,12 +247,13 @@ class QuaternionManipulator :
 
             filename = f"rotation-{self.counter_loop:04d}.png"
 
-            # - Perform the next quaternion rotation.
+            # - Perform the next set of quaternion operations.
             # - Update the Plotting agent with the results of this quaternion rotation.
             # - Instruct the Plotting agent to generate the new plot.
 
             self._perform_quaternion_operations()
             self._update_plotting_agent()
+
             self.plottingAgent.generate_plot(filename)
 
             self._update_loop_parameters()

@@ -3,7 +3,6 @@ import colorsys
 
 import numpy as np
 
-import matplotlib.pyplot as plt
 from   matplotlib.lines  import Line2D
 from   matplotlib.colors import LinearSegmentedColormap
 from   matplotlib.colors import Normalize
@@ -12,6 +11,7 @@ from   matplotlib.cm     import ScalarMappable
 import GlobalSettings
 import Utils
 import SubPlotAgent
+import PlottingAgent
 
 
 my_colormap = LinearSegmentedColormap.from_list(
@@ -34,7 +34,7 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
     def __init__(self,
 
-        plotting_agent: PlottingAgent
+        plotting_agent: PlottingAgent.PlottingAgent
     ) :
 
         super().__init__(plotting_agent)
@@ -115,7 +115,9 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
         w = Utils.format_component("", False, self._plotting_agent._quaternion_pre_multiply.w)
 
-        title_sub_plot = r"$qv$ in $S^{3}$ with $w=" + str(w) + "$"
+        local_string = f"Hue = {self._hue_value:.3f}"
+
+        title_sub_plot = r"$qv$ in $S^{3}$ with $w=" + str(w) + "$ : " + str(local_string)
 
         self._axis.set_title(
             title_sub_plot,
@@ -470,10 +472,13 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
         # - Set the color which is to be used for the surface of the sphere.
 
         self._update_colorbar()
+
+        # Note that the following two methods are defined in the parent class.
+        #
+        #   - Set the current color for the surface of the unit sphere.
+        #   - Plot the unit sphere.
+
         self._set_rgb_value_for_sphere_surface()
-
-        # Plot the unit sphere.
-
         self._plot_unit_sphere()
 
         self._plot_quaternion_pre_multiply()
