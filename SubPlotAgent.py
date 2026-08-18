@@ -133,8 +133,10 @@ class SubPlotAgent :
 
         else :
 
-            self._hue_value = ((self._plotting_agent._quaternion_pre_multiply.w) * 0.5) + 0.5
+            # self._hue_value = ((self._plotting_agent._quaternion_pre_multiply.w) * 0.5) + 0.5
+            self._hue_value = ((self._plotting_agent._quaternion_pre_multiply.w) * (0.5 / 0.577)) + 0.5
             print(nameMethod + " : self._plotting_agent._quaternion_pre_multiply is NOT None")
+            print(nameMethod + " : self._plotting_agent._angle_rotation = " + str(self._plotting_agent._angle_rotation))
             print(nameMethod + " : self._plotting_agent._quaternion_pre_multiply.w = " + str(self._plotting_agent._quaternion_pre_multiply.w))
 
         print(nameMethod + " : +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")

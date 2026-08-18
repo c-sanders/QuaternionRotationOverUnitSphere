@@ -171,7 +171,7 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
         # Place a color scale on the right hand side of this sub-plot.
 
-        norm = Normalize(vmin=-1.0, vmax=1.0)
+        norm = Normalize(vmin=-0.6, vmax=0.6)
 
         sm = ScalarMappable(
             norm=norm,

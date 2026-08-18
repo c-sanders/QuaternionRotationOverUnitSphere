@@ -4,7 +4,7 @@ import matplotlib
 matplotlib.use("QtAgg")
 import matplotlib.pyplot as plt
 from   matplotlib.lines  import Line2D
-from   matplotlib.ticker import MultipleLocator
+# from   matplotlib.ticker import MultipleLocator
 import json
 
 # Import the Python Image Library, aka PIL.
@@ -15,7 +15,7 @@ from PIL.PngImagePlugin import PngInfo
 import colorsys
 
 import GlobalSettings
-import Utils
+# import Utils
 
 import PlotHandleAgent_SubPlot_1
 import PlotHandleAgent_SubPlot_2
@@ -36,16 +36,6 @@ class PlottingAgent :
     passed into this class before it can generate a plot. Upon receiving all of this information, the class will store
     its own copies of it. By doing this, the information is then available to its two subclasses.
     """
-
-    class PlotHandleAgent_Plot :
-
-        def __init__(self,
-
-            plotting_agent : PlottingAgent
-        ) :
-
-            self._plotting_agent = plotting_agent
-
 
     def __init__(
 
@@ -169,10 +159,27 @@ class PlottingAgent :
             angle_rotation
     ) :
 
-        self.angle_rotation = angle_rotation
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
 
-    def set_quaternions(
+        print(nameMethod + " : Enter")
+
+        self._angle_rotation = angle_rotation
+
+        print(nameMethod + " : %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+        print(nameMethod + " : %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+
+        print(nameMethod + " : self._angle_rotation = " + str(self._angle_rotation))
+
+        print(nameMethod + " : %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+        print(nameMethod + " : %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+
+        print(nameMethod + " : Exit")
+
+
+    # Invoked by : External clients
+
+    def set_quaternions_and_min_max_values(
 
         self,
         quaternion_axis_rotation,
@@ -233,7 +240,7 @@ class PlottingAgent :
 
         # self.fig = plt.figure(figsize=(8, 8))
 
-        self.fig, (self.ax1, self.ax2) = plt.subplots(
+        self.fig, (self._ax1, self._ax2) = plt.subplots(
 
             2, 1,
             figsize=GlobalSettings.image_dimensions,
@@ -247,7 +254,7 @@ class PlottingAgent :
 
         nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
-        axis = self.ax1
+        axis = self._ax1
 
 
         print(nameMethod + " : Enter")
@@ -271,6 +278,8 @@ class PlottingAgent :
 
         print(nameMethod + " : Exit")
 
+
+    # Invoked by : set_quaternions
 
     def _update_min_max_values(self) :
 
@@ -331,21 +340,21 @@ class PlottingAgent :
         # label_quaternion_to_rotate_tip = f"Vector     : 0.000 + i{quaternion_to_rotate[0]:.3f} + j{quaternion_to_rotate[1]:.3f} + k{quaternion_to_rotate[2]:.3f}"
         # label_vector_c_tip = f"Partial    : {quaternion[0]:.3f} + i{quaternion[1]:.3f} + j{quaternion[2]:.3f} + k{quaternion[3]:.3f}"
 
-        label_quaternion_axis_rotation = self.generate_string(self.quaternion_axis_rotation.w,
-                                                              self.quaternion_axis_rotation.x,
-                                                              self.quaternion_axis_rotation.y,
-                                                              self.quaternion_axis_rotation.z)
+        label_quaternion_axis_rotation = Utils.generate_string(self.quaternion_axis_rotation.w,
+                                                               self.quaternion_axis_rotation.x,
+                                                               self.quaternion_axis_rotation.y,
+                                                               self.quaternion_axis_rotation.z)
 
-        label_quaternion_to_rotate     = self.generate_string(self.quaternion_to_rotate.w, self.quaternion_to_rotate.x,
-                                                              self.quaternion_to_rotate.y, self.quaternion_to_rotate.z)
+        label_quaternion_to_rotate     = Utils.generate_string(self.quaternion_to_rotate.w, self.quaternion_to_rotate.x,
+                                                               self.quaternion_to_rotate.y, self.quaternion_to_rotate.z)
 
-        label_quaternion_pre_multiply  = self.generate_string(self.quaternion_pre_multiply.w,
-                                                              self.quaternion_pre_multiply.x,
-                                                              self.quaternion_pre_multiply.y,
-                                                              self.quaternion_pre_multiply.z)
+        label_quaternion_pre_multiply  = Utils.generate_string(self.quaternion_pre_multiply.w,
+                                                               self.quaternion_pre_multiply.x,
+                                                               self.quaternion_pre_multiply.y,
+                                                               self.quaternion_pre_multiply.z)
 
-        label_quaternion_rotated       = self.generate_string(self.quaternion_rotated.w, self.quaternion_rotated.x,
-                                                              self.quaternion_rotated.y, self.quaternion_rotated.z)
+        label_quaternion_rotated       = Utils.generate_string(self.quaternion_rotated.w, self.quaternion_rotated.x,
+                                                               self.quaternion_rotated.y, self.quaternion_rotated.z)
 
         self.check_min_max_values()
 
@@ -358,7 +367,7 @@ class PlottingAgent :
         self.label_quaternion_pre_multiply_min =  "  - qv scalar min value  : " + label_quaternion_pre_multiply_min
         self.label_quaternion_pre_multiply_max =  "  - qv scalar max value  : " + label_quaternion_pre_multiply_max
         self.label_quaternion_rotated          = f"Quaternion rotated (v')  : " + label_quaternion_rotated
-        self.label_angle_rotation              = f"Angle of rotation        = {self.angle_rotation:8.3f} degrees"
+        self.label_angle_rotation              = f"Angle of rotation        = {self._angle_rotation:8.3f} degrees"
 
         axis.text(
             1.3, 0, 0,
@@ -408,7 +417,7 @@ class PlottingAgent :
                 "elevation" : self._elevation_view
             },
             "rotation" : {
-                "angle" : self.angle_rotation,
+                "angle" : self._angle_rotation,
                 "axis" : {
                     "scalar" : self._quaternion_axis_rotation.w,
                     "x"      : self._quaternion_axis_rotation.x,
@@ -525,7 +534,7 @@ class PlottingAgent :
 
         print(nameMethod + " : Enter")
 
-        self.ax2.set_title(GlobalSettings.title_sub_plot_2)
+        self._ax2.set_title(GlobalSettings.title_sub_plot_2)
 
         # ----------------------------
         # Labels
@@ -547,7 +556,7 @@ class PlottingAgent :
                 Line2D([0], [0], linestyle='None', marker=None, label=self.label_angle_rotation)
             ]
 
-            legend = self.ax2.legend(
+            legend = self._ax2.legend(
                 handles=legend_elements,
                 prop={
                     "family": "Liberation Mono",
@@ -606,7 +615,7 @@ class PlottingAgent :
         print(nameMethod + " : Enter")
 
         print(nameMethod + " : >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-        print(nameMethod + " : self.angle_rotation = " + str(self.angle_rotation))
+        print(nameMethod + " : self._angle_rotation = " + str(self._angle_rotation))
         print(nameMethod + " : <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
 
         print(nameMethod + " : Exit")
@@ -698,7 +707,7 @@ class PlottingAgent :
         print(nameMethod + " : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         print(nameMethod + " : ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
-        # Remove certain artifacts that are used by the sub-plot self.ax1.
+        # Remove certain artifacts that are used by the sub-plot self._ax1.
         #
         # Keep the following artifacts however, because they don't change and will simply get redrawn in the next plot.
         #
@@ -774,7 +783,7 @@ class PlottingAgent :
 
         print(nameMethod + " : Enter")
 
-        # Generate the sub-plots for both self.ax1 and self.ax2.
+        # Generate the sub-plots for both self._ax1 and self._ax2.
 
         self._subPlot_1.generate_plot()
         self._subPlot_2.generate_plot()

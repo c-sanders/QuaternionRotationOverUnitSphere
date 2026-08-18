@@ -191,7 +191,7 @@ class QuaternionManipulator :
 
         self.plottingAgent.set_angle_rotation(self.angle_rotation)
 
-        self.plottingAgent.set_quaternions(
+        self.plottingAgent.set_quaternions_and_min_max_values(
 
             self.quaternion_axis_rotation,
             self.quaternion_to_rotate,
@@ -204,6 +204,8 @@ class QuaternionManipulator :
             self.elevation_view
         )
 
+
+    # Invoked by : _generate_plots
 
     def _update_loop_parameters(self) :
 
@@ -232,7 +234,7 @@ class QuaternionManipulator :
         print(f"Azimuth view = {self.azimuth_view:f}")
 
 
-    # Invoked by : VectorManipulator::run
+    # Invoked by : run
 
     def _generate_plots(self) :
 
