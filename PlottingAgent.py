@@ -238,15 +238,38 @@ class PlottingAgent :
 
     def _create_figure_and_axes(self) :
 
-        # self.fig = plt.figure(figsize=(8, 8))
+        # self._fig = plt.figure(figsize=(8, 8))
 
-        self.fig, (self._ax1, self._ax2) = plt.subplots(
+        # self._fig, (self._ax1, self._ax2) = plt.subplots(
+        #
+        #     2, 1,
+        #     figsize=GlobalSettings.image_dimensions,
+        #     subplot_kw={'projection': '3d'}
+        # )
 
-            2, 1,
-            figsize=GlobalSettings.image_dimensions,
-            subplot_kw={'projection': '3d'}
-        )
+        # self._fig, axes (
+        #     (self._ax1, self._ax2),
+        #     (self._ax3, self._ax4)
+        # ) = plt.subplots(
+        #     2, 2,
+        #     figsize=GlobalSettings.image_dimensions,
+        #     # subplot_kw={'projection': '3d'}
+        # )
 
+        self._fig = plt.figure(figsize=(16, 14))
+
+        self._gs = self._fig.add_gridspec(2, 2)
+
+        self._ax1 = self._fig.add_subplot(self._gs[0, 0], projection='3d')
+        self._ax2 = self._fig.add_subplot(self._gs[0, 1], projection='3d')
+
+        # Move the following into : _set_legend
+
+        # self._legend2 = self._fig.add_subplot(self._gs[1, 1])
+        # self._legend2.axis('off')
+
+        handles1, labels1 = self._ax1.get_legend_handles_labels()
+        handles2, labels2 = self._ax2.get_legend_handles_labels()
 
     # Invoked by : _plot_quaternion_pre_multiply
 
@@ -318,9 +341,8 @@ class PlottingAgent :
             )
 
 
-    def _add_labels_to_plot(
+    def _add_labels_to_plot(self,
 
-            self,
             axis
     ) :
 
@@ -496,7 +518,7 @@ class PlottingAgent :
         # ax.set_xlabel('x')
         # ax.set_ylabel('y')
         # ax.set_zlabel('z')
-        # self.fig.set_title("Poop")
+        # self._fig.set_title("Poop")
 
         # Set the title for subplot 1.
 
@@ -658,7 +680,7 @@ class PlottingAgent :
 
         print("Saving the figure to file : " + str(filename) + "\n")
 
-        self.fig.savefig(
+        self._fig.savefig(
 
             filename,
             dpi         = GlobalSettings.image_dpi,
@@ -800,7 +822,7 @@ class PlottingAgent :
 
         # Set the title for the entire plot.
 
-        self.fig.suptitle(
+        self._fig.suptitle(
             GlobalSettings.title_plot,
             fontsize=20
         )
@@ -906,9 +928,9 @@ class PlottingAgent :
 
         # Close the figure so that we can free up the memory it is using.
 
-        plt.close(self.fig)
+        plt.close(self._fig)
 
-        self.fig = None
+        self._fig = None
         self.ax  = None
 
         print(nameMethod + " : Exit")

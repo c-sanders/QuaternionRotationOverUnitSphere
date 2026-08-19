@@ -36,7 +36,7 @@ class PlotHandleAgent_SubPlot_2(SubPlotAgent.SubPlotAgent) :
         #   - RGB color code for surface of unit sphere
         #   - vectors and history of vector points
 
-        self._axis = self._plotting_agent.ax2
+        self._axis = self._plotting_agent._ax2
 
         self._rgb_value_sphere    = None
         self._plot_handle_surface = None

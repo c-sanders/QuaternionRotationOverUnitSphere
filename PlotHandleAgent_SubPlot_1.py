@@ -39,6 +39,8 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
         super().__init__(plotting_agent)
 
+        self._plot_handle_title                           = None
+
         # Set the following attributes;
         #
         #   - colormap and its associated arrow
@@ -75,7 +77,7 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
         print(nameMethod + " : Enter")
 
-        self._axis = self._plotting_agent.ax1
+        self._axis = self._plotting_agent._ax1
 
         self._add_colormap()
         self._plot_unit_sphere()
@@ -106,12 +108,12 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
         if (
             (raise_if_set) and
-            (self._plot_handle_title_subplot is not None)
+            (self._plot_handle_title is not None)
         ) :
 
-            raise Exception("Attribute _plot_handle_title_subplot_1 : Trying to set this attribute whilst it is already set.")
+            raise Exception("Attribute _plot_handle_title : Trying to set this attribute whilst it is already set.")
 
-        # self.plot_handle_title_subplot_1 = plot_handle_title
+        # self._plot_handle_title = plot_handle_title
 
         w = Utils.format_component("", False, self._plotting_agent._quaternion_pre_multiply.w)
 
@@ -129,10 +131,10 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
     def clear_plot_title(self) :
 
-        if self._plot_handle_title_subplot_1 is not None :
+        if self._plot_handle_title is not None :
 
-            self._plot_handle_title_subplot_1.remove()
-            self._plot_handle_title_subplot_1 = None
+            self._plot_handle_title.remove()
+            self._plot_handle_title = None
 
 
     # Invoked by : configure
@@ -179,7 +181,7 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
         )
         sm.set_array([])
 
-        self._plot_handle_colormap = self._plotting_agent.fig.colorbar(
+        self._plot_handle_colormap = self._plotting_agent._fig.colorbar(
             sm,
             ax=self._axis,
             location="left",
@@ -331,7 +333,7 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
         nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
-        sub_plot = self._plotting_agent.ax1
+        sub_plot = self._plotting_agent._ax1
 
 
         print(nameMethod + " : Enter")
@@ -387,6 +389,8 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
         print(nameMethod + " : Exit")
 
 
+    # Invoked by : generate_plot
+
     def _set_legend(self,
 
         raise_if_set
@@ -399,10 +403,10 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
         if (
             (raise_if_set) and
-            (self.plot_handle_title_subplot_1 is not None)
+            (self._plot_handle_title is not None)
         ) :
 
-            raise Exception("Attribute _plot_handle_title_subplot_1 : Trying to set this attribute whilst it is already set.")
+            raise Exception("Attribute _plot_handle_title : Trying to set this attribute whilst it is already set.")
 
 
         if (GlobalSettings.display_legend_subplot_1) :
@@ -420,9 +424,31 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
                 Line2D([0], [0], linestyle='None', marker=None, label=self.label_angle_rotation)
             ]
 
+            # ####################################
+            # Work out where to put the following.
+            # ####################################
+
+            self._legend1 = self._plotting_agent._fig.add_subplot(self._gs[1, 0])
+            self._legend1.axis('off')
+
+            # handles1, labels1 = self._ax1.get_legend_handles_labels()
+
             # Configure the legend itself and set the subplot to use it.
 
-            self.plot_handle_legend = self.ax1.legend(
+            # self.plot_handle_legend = self._plotting_agent._ax1.legend(
+            #
+            #     handles=legend_elements,
+            #     prop={
+            #         "family": "Liberation Mono",
+            #         "size": 10
+            #     },
+            #     loc='lower center',
+            #     fontsize=10
+            # )
+
+            # self.plot_handle_legend = self._plotting_agent._ax1.legend(
+
+            self.plot_handle_legend = self._legend1.legend(
 
                 handles=legend_elements,
                 prop={
@@ -463,9 +489,9 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
         # - Set the title which is to be used for this sub-plot.
         # - Set the legend which is to be used for this sub-plot.
 
-        self._set_title(GlobalSettings.display_legend_subplot_1, GlobalSettings.raise_exception_if_already_set)
+        # self._set_title(GlobalSettings.display_legend_subplot_1, GlobalSettings.raise_exception_if_already_set)
         print(nameMethod + " : MARKER 0")
-        self._set_legend(False)
+        self._set_legend(True)
         print(nameMethod + " : MARKER 1")
 
         # - Move the arrow that is associated with the color bar.
