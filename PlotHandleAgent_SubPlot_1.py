@@ -40,6 +40,7 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
         super().__init__(plotting_agent)
 
         self._plot_handle_title                           = None
+        self._plot_handle_text                            = None
 
         # Set the following attributes;
         #
@@ -51,11 +52,19 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
         self._plot_handle_colormap_arrow_min              = None
         self._plot_handle_colormap_arrow_max              = None
 
+        #
+
+        self._plot_handle_legend                          = None
+
         self._plot_handle_quaternion_pre_multiply         = None
         self._plot_handle_quaternion_pre_multiply_history = None
 
         self.rgb_value_min                                = colorsys.hsv_to_rgb(0, 0, 1.0)
         self.rgb_value_max                                = colorsys.hsv_to_rgb(0, 0, 1.0)
+
+        self._label_spacer                                = None
+        self._label_viewing_angle_azimuth                 = None
+        self._label_viewing_angle_elevation               = None
 
         self._initialise_plot()
 
@@ -117,14 +126,30 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
         w = Utils.format_component("", False, self._plotting_agent._quaternion_pre_multiply.w)
 
-        local_string = f"Hue = {self._hue_value:.3f}"
+        print(nameMethod + " : MARKER 0")
 
-        title_sub_plot = r"$qv$ in $S^{3}$ with $w=" + str(w) + "$ : " + str(local_string)
+        # local_string = f"Hue = {self._hue_value:.3f}"
+
+        # title_sub_plot = f"$qv$ in $S^{{3}}$\n$w={w}$"
+        title_sub_plot   = f"$w={w}$"
+
+        print(nameMethod + " : MARKER 1")
 
         self._axis.set_title(
-            title_sub_plot,
+            f"Plot of $qv$ onto the surface of $S^{{3}}$",
             fontsize=14
         )
+
+        print(nameMethod + " : MARKER 2")
+
+        self._plot_handle_text = self._axis.text2D(
+                                                   0.5, -0.12,
+                                                   title_sub_plot,
+                                                   transform=self._axis.transAxes,
+                                                   ha="center",
+                                                   va="top",
+                                                   fontsize=14
+                                                  )
 
         print(nameMethod + " : Exit")
 
@@ -253,6 +278,7 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
     def clear_artifacts(self):
 
+        self._plot_handle_text.remove()
         self._clear_plot_handle_quaternion_pre_multiply()
         self._clear_sphere_wire_frame()
         self._clear_sphere_surface()
@@ -431,13 +457,16 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
         print(nameMethod + " : MARKER 2")
 
-        self._label_quaternion_axis_rotation    = f"Axis of rotation (q)     : " + label_quaternion_axis_rotation
-        self._label_quaternion_to_rotate        = f"Quaternion to rotate (v) : " + label_quaternion_to_rotate
-        self._label_quaternion_pre_multiply     = f"Pre multiplication (qv)  : " + label_quaternion_pre_multiply
-        self._label_quaternion_pre_multiply_min =  "  - qv scalar min value  : " + label_quaternion_pre_multiply_min
-        self._label_quaternion_pre_multiply_max =  "  - qv scalar max value  : " + label_quaternion_pre_multiply_max
-        self._label_quaternion_rotated          = f"Quaternion rotated (v')  : " + label_quaternion_rotated
-        self._label_angle_rotation              = f"Angle of rotation        = {self._plotting_agent._angle_rotation:8.3f} degrees"
+        self._label_quaternion_axis_rotation    = f"Axis of rotation (q)      : " + label_quaternion_axis_rotation
+        self._label_quaternion_to_rotate        = f"Quaternion to rotate (v)  : " + label_quaternion_to_rotate
+        self._label_quaternion_pre_multiply     = f"Pre multiplication (qv)   : " + label_quaternion_pre_multiply
+        self._label_quaternion_pre_multiply_min =  "  - qv scalar value : min : " + label_quaternion_pre_multiply_min
+        self._label_quaternion_pre_multiply_max =  "  - qv scalar value : max : " + label_quaternion_pre_multiply_max
+        self._label_quaternion_rotated          = f"Quaternion rotated (v')   : " + label_quaternion_rotated
+        self._label_angle_rotation              = f"Angle of rotation         = {self._plotting_agent._angle_rotation:8.3f} degrees"
+        self._label_spacer                      = ""
+        self._label_viewing_angle_azimuth       = f"Viewing angle - Azimuth   = {self._plotting_agent._azimuth_view:4.1f} degrees"
+        self._label_viewing_angle_elevation     = f"Viewing angle - Elevation = {self._plotting_agent._elevation_view:2f} degrees"
 
         print(nameMethod + " : Exit")
 
@@ -567,7 +596,15 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
                 Line2D([0], [0], linestyle='None', marker=None, label=self._label_quaternion_pre_multiply_min),
                 Line2D([0], [0], linestyle='None', marker=None, label=self._label_quaternion_pre_multiply_max),
                 # Line2D([0], [0], color='magenta',         lw=1, label=self.label_quaternion_rotated),
-                Line2D([0], [0], linestyle='None', marker=None, label=self._label_angle_rotation)
+
+                Line2D([0], [0], linestyle='None', marker=None, label=self._label_spacer),
+
+                Line2D([0], [0], linestyle='None', marker=None, label=self._label_angle_rotation),
+
+                Line2D([0], [0], linestyle='None', marker=None, label=self._label_spacer),
+
+                Line2D([0], [0], linestyle='None', marker=None, label=self._label_viewing_angle_azimuth),
+                Line2D([0], [0], linestyle='None', marker=None, label=self._label_viewing_angle_elevation)
             ]
 
             # ####################################
@@ -594,16 +631,30 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
             # self.plot_handle_legend = self._plotting_agent._ax1.legend(
 
-            self.plot_handle_legend = self._legend1.legend(
+            self._plot_handle_legend = self._legend1.legend(
 
                 handles=legend_elements,
                 prop={
                     "family": "Liberation Mono",
-                    "size": 10
+                    "size": 14
                 },
-                loc='lower center',
+                loc='upper center',
+                bbox_to_anchor=(0.5, 1.0),
                 fontsize=10
             )
+
+            #####
+
+            if False :
+
+                self._legend1 = self._ax1.legend(
+                    handles,
+                    labels,
+                    loc="upper center",
+                    bbox_to_anchor=(0.5, -0.05)
+                )
+
+            #####
 
             hue_value = ((self._plotting_agent._quaternion_pre_multiply.w) * 0.5) + 0.5
 
@@ -620,8 +671,8 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
             print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
             print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 
-            self.plot_handle_legend.get_texts()[1].set_color(self._plotting_agent._rgb_value_minimum)
-            self.plot_handle_legend.get_texts()[2].set_color(self._plotting_agent._rgb_value_maximum)
+            self._plot_handle_legend.get_texts()[1].set_color(self._plotting_agent._rgb_value_minimum)
+            self._plot_handle_legend.get_texts()[2].set_color(self._plotting_agent._rgb_value_maximum)
 
         print(nameMethod + " : Exit")
 

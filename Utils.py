@@ -1,11 +1,24 @@
+import sys
+
+
 def format_component(
 
         name,
         space,
         value
 ) :
+    nameMethod = "::" + str(sys._getframe().f_code.co_name)
+
+
+    print(nameMethod + " : Enter")
+
+    print(nameMethod + " : name  = " + str(name))
+    print(nameMethod + " : space = " + str(space))
+    print(nameMethod + " : value = " + str(value))
 
     if value == 0 :
+
+        print(nameMethod + " : MARKER 0")
 
         if space :
 
@@ -13,7 +26,13 @@ def format_component(
 
         else :
 
-            return f"+{name}{abs(value):.3f}"
+            print(nameMethod + " : MARKER 0A")
+
+            return_value = f"+{name}{abs(value):.3f}"
+
+            print(nameMethod + " : return_value = " + str(return_value))
+
+            return return_value
 
     elif value < 0 :
 
@@ -25,6 +44,8 @@ def format_component(
 
             return f"-{name}{abs(value):.3f}"
 
+        print(nameMethod + " : MARKER 1")
+
     else :
 
         if space :
@@ -34,6 +55,10 @@ def format_component(
         else :
 
             return f"+{name}{value:.3f}"
+
+        print(nameMethod + " : MARKER 2")
+
+    print(nameMethod + " : Exit")
 
 
 def generate_string(
