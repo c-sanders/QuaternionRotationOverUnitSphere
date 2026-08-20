@@ -106,12 +106,12 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
         print(nameMethod + " : Enter")
 
-        if (
-            (raise_if_set) and
-            (self._plot_handle_title is not None)
-        ) :
+        # if (
+        #     (raise_if_set) and
+        #     (self._plot_handle_title is not None)
+        # ) :
 
-            raise Exception("Attribute _plot_handle_title : Trying to set this attribute whilst it is already set.")
+        #     raise Exception("Attribute _plot_handle_title : Trying to set this attribute whilst it is already set.")
 
         # self._plot_handle_title = plot_handle_title
 
@@ -389,6 +389,148 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
         print(nameMethod + " : Exit")
 
 
+    # Invoked by : _add_labels_to_plot
+
+    def _generate_labels_legend(self) :
+
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
+
+
+        print(nameMethod + " : Enter")
+
+        label_quaternion_axis_rotation = Utils.generate_string(self._plotting_agent._quaternion_axis_rotation.w,
+                                                               self._plotting_agent._quaternion_axis_rotation.x,
+                                                               self._plotting_agent._quaternion_axis_rotation.y,
+                                                               self._plotting_agent._quaternion_axis_rotation.z)
+
+        print(nameMethod + " : MARKER 0")
+
+        label_quaternion_to_rotate     = Utils.generate_string(self._plotting_agent._quaternion_to_rotate.w,
+                                                               self._plotting_agent._quaternion_to_rotate.x,
+                                                               self._plotting_agent._quaternion_to_rotate.y,
+                                                               self._plotting_agent._quaternion_to_rotate.z)
+
+        print(nameMethod + " : MARKER 1")
+
+        label_quaternion_pre_multiply  = Utils.generate_string(self._plotting_agent._quaternion_pre_multiply.w,
+                                                               self._plotting_agent._quaternion_pre_multiply.x,
+                                                               self._plotting_agent._quaternion_pre_multiply.y,
+                                                               self._plotting_agent._quaternion_pre_multiply.z)
+
+        print(nameMethod + " : MARKER 2")
+
+        label_quaternion_rotated       = Utils.generate_string(self._plotting_agent._quaternion_rotated.w,
+                                                               self._plotting_agent._quaternion_rotated.x,
+                                                               self._plotting_agent._quaternion_rotated.y,
+                                                               self._plotting_agent._quaternion_rotated.z)
+
+        # self.check_min_max_values()
+
+        label_quaternion_pre_multiply_min = Utils.format_component("", False, self._plotting_agent._quaternion_pre_multiply_min)
+        label_quaternion_pre_multiply_max = Utils.format_component("", False, self._plotting_agent._quaternion_pre_multiply_max)
+
+        print(nameMethod + " : MARKER 2")
+
+        self._label_quaternion_axis_rotation    = f"Axis of rotation (q)     : " + label_quaternion_axis_rotation
+        self._label_quaternion_to_rotate        = f"Quaternion to rotate (v) : " + label_quaternion_to_rotate
+        self._label_quaternion_pre_multiply     = f"Pre multiplication (qv)  : " + label_quaternion_pre_multiply
+        self._label_quaternion_pre_multiply_min =  "  - qv scalar min value  : " + label_quaternion_pre_multiply_min
+        self._label_quaternion_pre_multiply_max =  "  - qv scalar max value  : " + label_quaternion_pre_multiply_max
+        self._label_quaternion_rotated          = f"Quaternion rotated (v')  : " + label_quaternion_rotated
+        self._label_angle_rotation              = f"Angle of rotation        = {self._plotting_agent._angle_rotation:8.3f} degrees"
+
+        print(nameMethod + " : Exit")
+
+
+    # Invoked by : _add_labels_to_plot
+
+    def _generate_labels_vector_tips(self) :
+
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
+
+
+        print(nameMethod + " : Enter")
+
+        # Label vector tip
+
+        # label_vector_a_tip = "<" + str(vector_a[0])   + ", " + str(vector_a[1])   + ", " + str(vector_a[2]) + ">"
+        # label_quaternion_to_rotate_tip = "<" + str(quaternion_to_rotate[0])   + ", " + str(quaternion_to_rotate[1])   + ", " + str(quaternion_to_rotate[2]) + ">"
+        # label_vector_c_tip = "<" + str(quaternion[1]) + ", " + str(quaternion[1]) + ", " + str(quaternion[2]) + ", " + str(quaternion[2]) + ">"
+        # label_vector_d_tip = "<" + str(vector_d[0])   + ", " + str(vector_d[1])   + ", " + str(vector_d[2]) + ">"
+
+        # label_vector_a_tip = f"Axis       : 0.000 + i{vector_a[0]:.3f} + j{vector_a[1]:.3f} + k{vector_a[2]:.3f}"
+        # label_quaternion_to_rotate_tip = f"Vector     : 0.000 + i{quaternion_to_rotate[0]:.3f} + j{quaternion_to_rotate[1]:.3f} + k{quaternion_to_rotate[2]:.3f}"
+        # label_vector_c_tip = f"Partial    : {quaternion[0]:.3f} + i{quaternion[1]:.3f} + j{quaternion[2]:.3f} + k{quaternion[3]:.3f}"
+
+        print(nameMethod + " : Exit")
+
+
+    # Invoked by : _add_labels_to_plot
+
+    def _add_axis_labels_to_plot(self):
+
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
+
+
+        print(nameMethod + " : Enter")
+
+        self._axis.text(
+            1.3, 0, 0,
+            "x",
+            color="black"
+        )
+
+        self._axis.text(
+            0, 1.3, 0,
+            "y",
+            color="black"
+        )
+
+        self._axis.text(
+            0, 0, 1.3,
+            "z",
+            color="black"
+        )
+
+        print(nameMethod + " : Exit")
+
+
+    # Invoked by :
+
+    def _add_labels_to_plot(self,
+
+            axis
+    ) :
+
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
+
+
+        print(nameMethod + " : Enter")
+
+        self._generate_labels_legend()
+        self._generate_labels_vector_tips()
+
+        self._add_axis_labels_to_plot()
+
+        # ax.text(
+        #     quaternion_to_rotate[0], quaternion_to_rotate[1], quaternion_to_rotate[2],
+        #     label_quaternion_to_rotate_tip,
+        #     color="green"
+        # )
+
+        # ax.text(
+        #     quaternion[1], quaternion[2], quaternion[3],
+        #     label_vector_c_tip,
+        #     color="blue"
+        # )
+
+        # ax.text(
+        #     quaternion_rotated[0], quaternion_rotated[1], quaternion_rotated[2],
+        #     label_quaternion_rotated_tip,
+        #     color="magenta"
+        # )
+
+
     # Invoked by : generate_plot
 
     def _set_legend(self,
@@ -401,6 +543,9 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
         print(nameMethod + " : Enter")
 
+        # If exceptions are enabled for this method and the plot title is already set, then have this method raise an
+        # exception.
+
         if (
             (raise_if_set) and
             (self._plot_handle_title is not None)
@@ -408,6 +553,7 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
             raise Exception("Attribute _plot_handle_title : Trying to set this attribute whilst it is already set.")
 
+        self._generate_labels_legend()
 
         if (GlobalSettings.display_legend_subplot_1) :
 
@@ -417,18 +563,18 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
 
                 # Line2D([0], [0], color='red',             lw=1, label=self.label_quaternion_axis_rotation),
                 # Line2D([0], [0], color='green',           lw=1, label=self.label_quaternion_to_rotate),
-                Line2D([0], [0], color='none',     lw=1,        label=self.label_quaternion_pre_multiply),
-                Line2D([0], [0], linestyle='None', marker=None, label=self.label_quaternion_pre_multiply_min),
-                Line2D([0], [0], linestyle='None', marker=None, label=self.label_quaternion_pre_multiply_max),
+                Line2D([0], [0], color='none',     lw=1,        label=self._label_quaternion_pre_multiply),
+                Line2D([0], [0], linestyle='None', marker=None, label=self._label_quaternion_pre_multiply_min),
+                Line2D([0], [0], linestyle='None', marker=None, label=self._label_quaternion_pre_multiply_max),
                 # Line2D([0], [0], color='magenta',         lw=1, label=self.label_quaternion_rotated),
-                Line2D([0], [0], linestyle='None', marker=None, label=self.label_angle_rotation)
+                Line2D([0], [0], linestyle='None', marker=None, label=self._label_angle_rotation)
             ]
 
             # ####################################
             # Work out where to put the following.
             # ####################################
 
-            self._legend1 = self._plotting_agent._fig.add_subplot(self._gs[1, 0])
+            self._legend1 = self._plotting_agent._fig.add_subplot(self._plotting_agent._gs[1, 0])
             self._legend1.axis('off')
 
             # handles1, labels1 = self._ax1.get_legend_handles_labels()
@@ -459,7 +605,7 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
                 fontsize=10
             )
 
-            hue_value = ((self._quaternion_pre_multiply.w) * 0.5) + 0.5
+            hue_value = ((self._plotting_agent._quaternion_pre_multiply.w) * 0.5) + 0.5
 
             rgb_value_local = colorsys.hsv_to_rgb(
 
@@ -474,7 +620,8 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
             print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
             print(nameMethod + " : @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 
-            self.plot_handle_legend.get_texts()[2].set_color(rgb_value_local)
+            self.plot_handle_legend.get_texts()[1].set_color(self._plotting_agent._rgb_value_minimum)
+            self.plot_handle_legend.get_texts()[2].set_color(self._plotting_agent._rgb_value_maximum)
 
         print(nameMethod + " : Exit")
 
@@ -489,7 +636,7 @@ class PlotHandleAgent_SubPlot_1(SubPlotAgent.SubPlotAgent) :
         # - Set the title which is to be used for this sub-plot.
         # - Set the legend which is to be used for this sub-plot.
 
-        # self._set_title(GlobalSettings.display_legend_subplot_1, GlobalSettings.raise_exception_if_already_set)
+        self._set_title(GlobalSettings.display_legend_subplot_1, GlobalSettings.raise_exception_if_already_set)
         print(nameMethod + " : MARKER 0")
         self._set_legend(True)
         print(nameMethod + " : MARKER 1")

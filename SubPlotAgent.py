@@ -123,6 +123,18 @@ class SubPlotAgent :
 
 
         print(nameMethod + " : Enter")
+
+        self._rgb_value_sphere = self._plotting_agent._rgb_value_current
+
+        print(nameMethod + " : Exit")
+
+
+    def _set_rgb_value_for_sphere_surface_old(self) :
+
+        nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
+
+
+        print(nameMethod + " : Enter")
         print(nameMethod + " : +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")
         print(nameMethod + " : +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")
 

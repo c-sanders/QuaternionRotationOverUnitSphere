@@ -76,6 +76,7 @@ class PlottingAgent :
         # Attributes which pertain to the layout of the plot.
 
         self._fig                         = None
+        self._gs                          = None
         self._ax1                         = None
         self._ax2                         = None
 
@@ -100,6 +101,12 @@ class PlottingAgent :
         self._x_components                = []
         self._y_components                = []
         self._z_components                = []
+
+        # RGB value.
+
+        self._rgb_value_current           = None
+        self._rgb_value_minimum           = None
+        self._rgb_value_maximum           = None
 
         # Attributes which pertain to the plot's viewing angle.
 
@@ -204,6 +211,8 @@ class PlottingAgent :
 
         self._update_min_max_values()
 
+        self._update_rgb_values()
+
         print(nameMethod + " : Exit")
 
 
@@ -273,7 +282,7 @@ class PlottingAgent :
 
     # Invoked by : _plot_quaternion_pre_multiply
 
-    def plot_unit_sphere_quaternion_pre_multiply(self) :
+    def _plot_unit_sphere_quaternion_pre_multiply(self) :
 
         nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
@@ -302,25 +311,9 @@ class PlottingAgent :
         print(nameMethod + " : Exit")
 
 
-    # Invoked by : set_quaternions
+    # Invoked by : set_quaternions_and_min_max_values
 
     def _update_min_max_values(self) :
-
-        if (
-            (self._quaternion_pre_multiply_max is None) or
-            (self._quaternion_pre_multiply.w > self._quaternion_pre_multiply_max)
-           ) :
-
-            self._quaternion_pre_multiply_max = self._quaternion_pre_multiply.w
-
-            hue_value = ((self._quaternion_pre_multiply.w) * 0.5) + 0.5
-
-            self.rgb_value_max = colorsys.hsv_to_rgb(
-
-                hue_value,  # hue (0–1)
-                1.0,  # saturation
-                1.0  # value
-            )
 
         # Check if the scalar component of qv has reached a new minimum.
 
@@ -331,101 +324,71 @@ class PlottingAgent :
 
             self._quaternion_pre_multiply_min = self._quaternion_pre_multiply.w
 
-            hue_value = ((self._quaternion_pre_multiply.w) * 0.5) + 0.5
+            # hue_value = ((self._quaternion_pre_multiply.w) * 0.5) + 0.5
 
-            self.rgb_value_min = colorsys.hsv_to_rgb(
+            # self.rgb_value_min = colorsys.hsv_to_rgb(
+            #
+            #     hue_value,  # hue (0–1)
+            #     1.0,  # saturation
+            #     1.0  # value
+            # )
+
+            hue_value = (self._quaternion_pre_multiply_min * (0.5 / 0.577)) + 0.5
+
+            self._rgb_value_minimum = colorsys.hsv_to_rgb(
 
                 hue_value,  # hue (0–1)
                 1.0,  # saturation
                 1.0  # value
             )
 
+        # Check if the scalar component of qv has reached a new maximum.
 
-    def _add_labels_to_plot(self,
+        if (
+            (self._quaternion_pre_multiply_max is None) or
+            (self._quaternion_pre_multiply.w > self._quaternion_pre_multiply_max)
+           ) :
 
-            axis
-    ) :
+            self._quaternion_pre_multiply_max = self._quaternion_pre_multiply.w
+
+            # hue_value = ((self._quaternion_pre_multiply.w) * 0.5) + 0.5
+
+            # self.rgb_value_max = colorsys.hsv_to_rgb(
+            #
+            #     hue_value,  # hue (0–1)
+            #     1.0,  # saturation
+            #     1.0  # value
+            # )
+
+            hue_value = (self._quaternion_pre_multiply_max * (0.5 / 0.577)) + 0.5
+
+            self._rgb_value_maximum = colorsys.hsv_to_rgb(
+
+                hue_value,  # hue (0–1)
+                1.0,              # saturation
+                1.0               # value
+            )
+
+
+    # Invoked by : set_quaternions_and_min_max_values
+
+    def _update_rgb_values(self) :
 
         nameMethod = str(self.__class__.__name__) + "::" + str(sys._getframe().f_code.co_name)
 
 
         print(nameMethod + " : Enter")
 
-        # Label vector tip
+        hue_value = ((self._quaternion_pre_multiply.w) * (0.5 / 0.577)) + 0.5
 
-        # label_vector_a_tip = "<" + str(vector_a[0])   + ", " + str(vector_a[1])   + ", " + str(vector_a[2]) + ">"
-        # label_quaternion_to_rotate_tip = "<" + str(quaternion_to_rotate[0])   + ", " + str(quaternion_to_rotate[1])   + ", " + str(quaternion_to_rotate[2]) + ">"
-        # label_vector_c_tip = "<" + str(quaternion[1]) + ", " + str(quaternion[1]) + ", " + str(quaternion[2]) + ", " + str(quaternion[2]) + ">"
-        # label_vector_d_tip = "<" + str(vector_d[0])   + ", " + str(vector_d[1])   + ", " + str(vector_d[2]) + ">"
+        self._rgb_value_current = colorsys.hsv_to_rgb(
 
-        # label_vector_a_tip = f"Axis       : 0.000 + i{vector_a[0]:.3f} + j{vector_a[1]:.3f} + k{vector_a[2]:.3f}"
-        # label_quaternion_to_rotate_tip = f"Vector     : 0.000 + i{quaternion_to_rotate[0]:.3f} + j{quaternion_to_rotate[1]:.3f} + k{quaternion_to_rotate[2]:.3f}"
-        # label_vector_c_tip = f"Partial    : {quaternion[0]:.3f} + i{quaternion[1]:.3f} + j{quaternion[2]:.3f} + k{quaternion[3]:.3f}"
-
-        label_quaternion_axis_rotation = Utils.generate_string(self.quaternion_axis_rotation.w,
-                                                               self.quaternion_axis_rotation.x,
-                                                               self.quaternion_axis_rotation.y,
-                                                               self.quaternion_axis_rotation.z)
-
-        label_quaternion_to_rotate     = Utils.generate_string(self.quaternion_to_rotate.w, self.quaternion_to_rotate.x,
-                                                               self.quaternion_to_rotate.y, self.quaternion_to_rotate.z)
-
-        label_quaternion_pre_multiply  = Utils.generate_string(self.quaternion_pre_multiply.w,
-                                                               self.quaternion_pre_multiply.x,
-                                                               self.quaternion_pre_multiply.y,
-                                                               self.quaternion_pre_multiply.z)
-
-        label_quaternion_rotated       = Utils.generate_string(self.quaternion_rotated.w, self.quaternion_rotated.x,
-                                                               self.quaternion_rotated.y, self.quaternion_rotated.z)
-
-        self.check_min_max_values()
-
-        label_quaternion_pre_multiply_min = format_component("", False, self.quaternion_pre_multiply_min)
-        label_quaternion_pre_multiply_max = format_component("", False, self.quaternion_pre_multiply_max)
-
-        self.label_quaternion_axis_rotation    = f"Axis of rotation (q)     : " + label_quaternion_axis_rotation
-        self.label_quaternion_to_rotate        = f"Quaternion to rotate (v) : " + label_quaternion_to_rotate
-        self.label_quaternion_pre_multiply     = f"Pre multiplication (qv)  : " + label_quaternion_pre_multiply
-        self.label_quaternion_pre_multiply_min =  "  - qv scalar min value  : " + label_quaternion_pre_multiply_min
-        self.label_quaternion_pre_multiply_max =  "  - qv scalar max value  : " + label_quaternion_pre_multiply_max
-        self.label_quaternion_rotated          = f"Quaternion rotated (v')  : " + label_quaternion_rotated
-        self.label_angle_rotation              = f"Angle of rotation        = {self._angle_rotation:8.3f} degrees"
-
-        axis.text(
-            1.3, 0, 0,
-            "x",
-            color="black"
+            hue_value,  # hue (0–1)
+            1.0,              # saturation
+            1.0               # value
         )
 
-        axis.text(
-            0, 1.3, 0,
-            "y",
-            color="black"
-        )
-
-        axis.text(
-            0, 0, 1.3,
-            "z",
-            color="black"
-        )
-
-        # ax.text(
-        #     quaternion_to_rotate[0], quaternion_to_rotate[1], quaternion_to_rotate[2],
-        #     label_quaternion_to_rotate_tip,
-        #     color="green"
-        # )
-
-        # ax.text(
-        #     quaternion[1], quaternion[2], quaternion[3],
-        #     label_vector_c_tip,
-        #     color="blue"
-        # )
-
-        # ax.text(
-        #     quaternion_rotated[0], quaternion_rotated[1], quaternion_rotated[2],
-        #     label_quaternion_rotated_tip,
-        #     color="magenta"
-        # )
+        print(nameMethod + " : Exit")
 
 
     def _encode_metadata(self) :

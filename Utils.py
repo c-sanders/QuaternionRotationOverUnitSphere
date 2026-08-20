@@ -44,9 +44,9 @@ def generate_string(
         k_value
 ) :
 
-    label = self.format_component("", False, scalar_value) + " "
-    label += f"{self.format_component('i', True, i_value)} "
-    label += f"{self.format_component('j', True, j_value)} "
-    label += f"{self.format_component('k', True, k_value)}"
+    label = format_component("", False, scalar_value) + " "
+    label += f"{format_component('i', True, i_value)} "
+    label += f"{format_component('j', True, j_value)} "
+    label += f"{format_component('k', True, k_value)}"
 
     return label
